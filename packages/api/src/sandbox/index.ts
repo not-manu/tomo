@@ -1,0 +1,31 @@
+import { z } from "zod";
+
+export namespace Sandbox {
+	export const Image = "tomo-sandbox";
+	export const Mount = "/workspace";
+	export const User = "1000:1000";
+	export const Timeout = 60;
+
+	export const Entry = z.object({
+		name: z.string(),
+		path: z.string(),
+		type: z.enum(["file", "dir"]),
+		size: z.number(),
+		modifiedAt: z.coerce.date(),
+	});
+	export type Entry = z.infer<typeof Entry>;
+
+	export const Result = z.object({
+		exitCode: z.number(),
+		stdout: z.string(),
+		stderr: z.string(),
+	});
+	export type Result = z.infer<typeof Result>;
+
+	export const Run = z.object({
+		cmd: z.string().min(1),
+		cwd: z.string().default("/"),
+		timeout: z.number().int().positive().max(600).default(Timeout),
+	});
+	export type Run = z.infer<typeof Run>;
+}
