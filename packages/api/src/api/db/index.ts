@@ -33,6 +33,7 @@ export namespace Db {
 	});
 	export const Index = index;
 	export const UniqueIndex = uniqueIndex;
+	export const PrimaryKey = primaryKey;
 
 	export function transaction<T>(db: Type, fn: (tx: Tx) => T) {
 		return db.transaction(fn);
