@@ -20,6 +20,7 @@
 	},
 	"dependencies": {
 		"@hono/node-server": "^2.1.1",
+		"@hono/zod-validator": "^0.9.1",
 		"better-auth": "^1.7.6",
 		"better-sqlite3": "^13.0.3",
 		"dockerode": "^5.0.1",
