@@ -1,4 +1,5 @@
 import { Core } from "@tomo/api";
+import { Auth } from "~/components/auth";
 import { Figure } from "~/components/figure";
 import { Footer } from "~/components/footer";
 import { Section } from "~/components/section";
@@ -58,7 +59,7 @@ export default function HomePage() {
 			<Text.Heading className="max-w-120">{Core.DESCRIPTION}</Text.Heading>
 			<div className="h-8" />
 			<div className="flex flex-wrap items-center gap-2">
-				<Button size="lg">Log in</Button>
+				<Auth.Button />
 				<Button size="lg" variant="secondary">
 					Read the docs
 				</Button>

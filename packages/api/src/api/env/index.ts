@@ -1,10 +1,20 @@
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { Core } from "../../core";
 
-const ROOT = fileURLToPath(new URL("../../../../../", import.meta.url));
+function findRoot(from: string): string {
+	let dir = from;
+	while (!existsSync(join(dir, "pnpm-workspace.yaml"))) {
+		const parent = dirname(dir);
+		if (parent === dir) return process.cwd();
+		dir = parent;
+	}
+	return dir;
+}
+
+const ROOT = findRoot(dirname(fileURLToPath(import.meta.url)));
 const ENV_FILE = resolve(ROOT, ".env");
 
 if (existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);

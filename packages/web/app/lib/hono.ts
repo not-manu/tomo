@@ -1,7 +1,8 @@
-import { Api, Core } from "@tomo/api";
+import { Api } from "@tomo/api";
 import { hc, type InferResponseType } from "hono/client";
 
-const baseURL = Core.isLocal() ? Api.URLs.Domains.Development : Api.URLs.Domains.Production;
+export const baseURL =
+	typeof window === "undefined" ? Api.URLs.Domains.Production : window.location.origin;
 
 export const hono = hc<Api.App>(baseURL, {
 	init: { credentials: "include" },
