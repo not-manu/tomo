@@ -21,8 +21,11 @@ services:
       ENVIRONMENT: production
       PORT: 8666
     env_file: ../../.env
+    group_add:
+      - "113"
     volumes:
       - /data/tomo:/data/tomo
+      - /var/run/docker.sock:/var/run/docker.sock
     expose:
       - "8666"
 

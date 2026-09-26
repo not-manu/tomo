@@ -6,7 +6,7 @@
 	},
 	"scripts": {
 		"dev": "tsx watch src/index.ts",
-		"build": "esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --external:better-sqlite3 --outfile=dist/index.mjs",
+		"build": "esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --external:better-sqlite3 --external:dockerode --outfile=dist/index.mjs",
 		"start": "node dist/index.mjs",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome lint .",

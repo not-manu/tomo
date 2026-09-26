@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { Db } from "../api/db";
-import type { User } from "../auth/user";
+import { User } from "../auth/user";
 import { SandboxAPI } from "../sandbox/api";
 import { Member } from "./member";
 import { Workspace } from ".";
@@ -60,8 +60,16 @@ export namespace WorkspaceAPI {
 
 	export function members(db: Db.Client, workspace: Ref) {
 		return db
-			.select()
+			.select({
+				userId: Member.Table.userId,
+				role: Member.Table.role,
+				joinedAt: Member.Table.joinedAt,
+				name: User.Table.name,
+				email: User.Table.email,
+				image: User.Table.image,
+			})
 			.from(Member.Table)
+			.innerJoin(User.Table, eq(Member.Table.userId, User.Table.id))
 			.where(eq(Member.Table.workspaceId, workspace.id))
 			.orderBy(Member.Table.joinedAt)
 			.all();
