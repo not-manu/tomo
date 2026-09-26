@@ -1,6 +1,6 @@
 {
 	"name": "tomo",
-	"version": "0.5.3",
+	"version": "0.5.4",
 	"private": true,
 	"description": "a multiplayer OS for humans and agents.",
 	"scripts": {
