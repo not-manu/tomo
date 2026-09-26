@@ -6,7 +6,9 @@
 - Problem
 
 "Work is multiplayer, but agents are singleplayer."
+"Future of collaboration!"
 
+  * Theme of the hackathon is "future of work!"
 
 - Inspiration
 
@@ -22,3 +24,22 @@ Agents -> Tomo!
 
 
 - Impact
+
+
+- What makes it different
+
+GrokBot: team of agents?
+Tomo: team of humans + agents!
+
+Cursor Cloud Agents: virtual machine
+Tomo: virtual machine + desktop!
+
+
+- Technical design
+
+[ Diagram ]
+
+
+- Future Roadmap
+
+
