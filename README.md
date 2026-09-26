@@ -8,7 +8,7 @@
 https://tomo.computer
 <br/>
 <br/>
-the multiplayer workspace for humans
+a collaborative workspace for humans
 <br/>
 and agents
 

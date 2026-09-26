@@ -57,7 +57,7 @@ export default function HomePage() {
 			<Section.Label index={1}>{Core.NAME}</Section.Label>
 			<div className="h-4" />
 			<Text.Heading>
-				The multiplayer workspace for humans
+				A collaborative workspace for humans
 				<br />
 				and agents
 			</Text.Heading>
