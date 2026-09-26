@@ -10,6 +10,7 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "~/components/ui/context-menu";
+import { User } from "~/components/user";
 import type { hono, InferHono } from "~/lib/hono";
 import { Danger } from "../danger";
 import { Wallpaper } from "../wallpaper";
@@ -38,11 +39,14 @@ export function Item({ workspace }: { workspace: Item }) {
 							className="aspect-square rounded-2xl border shadow-sm transition group-hover:shadow-md group-focus-visible:ring-2 group-focus-visible:ring-ring"
 							workspace={workspace}
 						/>
-						<span className="flex flex-col px-1">
-							<span className="truncate font-medium text-sm">{workspace.name}</span>
-							<span className="text-muted-foreground text-xs">
-								<span className="capitalize">{workspace.role}</span> · {created}
+						<span className="flex items-center gap-3 px-1">
+							<span className="flex min-w-0 grow flex-col">
+								<span className="truncate font-medium text-sm">{workspace.name}</span>
+								<span className="text-muted-foreground text-xs">
+									<span className="capitalize">{workspace.role}</span> · {created}
+								</span>
 							</span>
+							<User.Stack users={workspace.online} size="xs" />
 						</span>
 					</Tomo.Link>
 				</ContextMenuTrigger>

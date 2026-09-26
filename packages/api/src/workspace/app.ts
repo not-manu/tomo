@@ -27,7 +27,14 @@ const one = new Hono<Middleware.IsMember>()
 		console.error(error);
 		return c.json({ message: "Internal error" }, 500);
 	})
-	.get("/", (c) => c.json({ ...c.get("workspace"), role: c.get("member").role }))
+	.get("/", (c) => {
+		const workspace = c.get("workspace");
+		return c.json({
+			...workspace,
+			role: c.get("member").role,
+			online: PresenceAPI.online(workspace.id),
+		});
+	})
 	.get(
 		"/presence",
 		SocketAPI.upgrade((c) => {
@@ -141,7 +148,14 @@ const one = new Hono<Middleware.IsMember>()
 
 const app = new Hono<Middleware.IsAuthenticated>()
 	.use(MiddlewareAPI.isAuthenticated)
-	.get("/", (c) => c.json(WorkspaceAPI.list(DbAPI.instance(), { user: c.get("identity").user })))
+	.get("/", (c) =>
+		c.json(
+			WorkspaceAPI.list(DbAPI.instance(), { user: c.get("identity").user }).map((workspace) => ({
+				...workspace,
+				online: PresenceAPI.online(workspace.id),
+			})),
+		),
+	)
 	.post("/", zValidator("json", Workspace.Create), (c) =>
 		c.json(
 			WorkspaceAPI.create(DbAPI.instance(), {

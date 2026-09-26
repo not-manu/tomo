@@ -3,6 +3,7 @@ import { ArrowLeft, Settings } from "lucide-react";
 import { Text } from "~/components/text";
 import { Tomo } from "~/components/tomo";
 import { Button } from "~/components/ui/button";
+import { User } from "~/components/user";
 import type { hono, InferHono } from "~/lib/hono";
 import { Members } from "../members";
 
@@ -26,6 +27,7 @@ export function Root({ workspace }: { workspace: Detail }) {
 					<Text.Subtext>{owner ? "You own this workspace." : "You're a member."}</Text.Subtext>
 				</div>
 				<div className="flex items-center gap-2">
+					<User.Stack className="mr-2" users={workspace.online} />
 					<Members.Root workspace={workspace} />
 					<Button aria-label="Workspace settings" asChild size="icon" variant="outline">
 						<Tomo.Link to={`${Workspace.path(workspace)}/settings`}>
