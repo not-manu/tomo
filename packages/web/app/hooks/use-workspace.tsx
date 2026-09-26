@@ -1,16 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Workspace } from "@tomo/api";
+import { Workspace } from "@tomo/api";
 import { errorMessage, hono } from "~/lib/hono";
-
-export const workspaceKeys = {
-	all: ["workspaces"] as const,
-	one: (id: string) => ["workspace", id] as const,
-	members: (id: string) => ["workspace", id, "members"] as const,
-};
 
 export function useWorkspaces() {
 	return useQuery({
-		queryKey: workspaceKeys.all,
+		queryKey: Workspace.QueryKeys.all(),
 		queryFn: async () => {
 			const response = await hono.api.workspace.$get();
 			if (!response.ok) throw new Error(await errorMessage(response));
@@ -21,7 +15,7 @@ export function useWorkspaces() {
 
 export function useWorkspace(id: string) {
 	return useQuery({
-		queryKey: workspaceKeys.one(id),
+		queryKey: Workspace.QueryKeys.one(id),
 		retry: false,
 		queryFn: async () => {
 			const response = await hono.api.workspace[":id"].$get({ param: { id } });
@@ -33,7 +27,7 @@ export function useWorkspace(id: string) {
 
 export function useMembers(id: string) {
 	return useQuery({
-		queryKey: workspaceKeys.members(id),
+		queryKey: Workspace.QueryKeys.members(id),
 		queryFn: async () => {
 			const response = await hono.api.workspace[":id"].members.$get({ param: { id } });
 			if (!response.ok) throw new Error(await errorMessage(response));
@@ -50,7 +44,7 @@ export function useCreateWorkspace() {
 			if (!response.ok) throw new Error(await errorMessage(response));
 			return response.json();
 		},
-		onSuccess: () => client.invalidateQueries({ queryKey: workspaceKeys.all }),
+		onSuccess: () => client.invalidateQueries({ queryKey: Workspace.QueryKeys.all() }),
 	});
 }
 
@@ -63,8 +57,8 @@ export function useUpdateWorkspace(id: string) {
 			return response.json();
 		},
 		onSuccess: () => {
-			client.invalidateQueries({ queryKey: workspaceKeys.one(id) });
-			client.invalidateQueries({ queryKey: workspaceKeys.all });
+			client.invalidateQueries({ queryKey: Workspace.QueryKeys.one(id) });
+			client.invalidateQueries({ queryKey: Workspace.QueryKeys.all() });
 		},
 	});
 }
@@ -78,8 +72,8 @@ export function useDeleteWorkspace(id: string) {
 			return response.json();
 		},
 		onSuccess: () => {
-			client.removeQueries({ queryKey: workspaceKeys.one(id) });
-			client.invalidateQueries({ queryKey: workspaceKeys.all });
+			client.removeQueries({ queryKey: Workspace.QueryKeys.one(id) });
+			client.invalidateQueries({ queryKey: Workspace.QueryKeys.all() });
 		},
 	});
 }
@@ -93,8 +87,8 @@ export function useLeaveWorkspace(id: string) {
 			return response.json();
 		},
 		onSuccess: () => {
-			client.removeQueries({ queryKey: workspaceKeys.one(id) });
-			client.invalidateQueries({ queryKey: workspaceKeys.all });
+			client.removeQueries({ queryKey: Workspace.QueryKeys.one(id) });
+			client.invalidateQueries({ queryKey: Workspace.QueryKeys.all() });
 		},
 	});
 }

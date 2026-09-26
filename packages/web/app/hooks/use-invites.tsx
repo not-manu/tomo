@@ -1,16 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Invite } from "@tomo/api";
-import { workspaceKeys } from "~/hooks/use-workspace";
+import { Invite, Workspace } from "@tomo/api";
 import { errorMessage, hono } from "~/lib/hono";
-
-export const inviteKeys = {
-	inbox: ["invites"] as const,
-	workspace: (id: string) => ["workspace", id, "invites"] as const,
-};
 
 export function useInbox() {
 	return useQuery({
-		queryKey: inviteKeys.inbox,
+		queryKey: Invite.QueryKeys.inbox(),
 		queryFn: async () => {
 			const response = await hono.api.invites.$get();
 			if (!response.ok) throw new Error(await errorMessage(response));
@@ -28,8 +22,8 @@ export function useAcceptInvite() {
 			return response.json();
 		},
 		onSuccess: () => {
-			client.invalidateQueries({ queryKey: inviteKeys.inbox });
-			client.invalidateQueries({ queryKey: workspaceKeys.all });
+			client.invalidateQueries({ queryKey: Invite.QueryKeys.inbox() });
+			client.invalidateQueries({ queryKey: Workspace.QueryKeys.all() });
 		},
 	});
 }
@@ -42,13 +36,13 @@ export function useDeclineInvite() {
 			if (!response.ok) throw new Error(await errorMessage(response));
 			return response.json();
 		},
-		onSuccess: () => client.invalidateQueries({ queryKey: inviteKeys.inbox }),
+		onSuccess: () => client.invalidateQueries({ queryKey: Invite.QueryKeys.inbox() }),
 	});
 }
 
 export function useWorkspaceInvites(id: string) {
 	return useQuery({
-		queryKey: inviteKeys.workspace(id),
+		queryKey: Invite.QueryKeys.workspace(id),
 		queryFn: async () => {
 			const response = await hono.api.workspace[":id"].invites.$get({ param: { id } });
 			if (!response.ok) throw new Error(await errorMessage(response));
@@ -65,7 +59,7 @@ export function useCreateInvite(id: string) {
 			if (!response.ok) throw new Error(await errorMessage(response));
 			return response.json();
 		},
-		onSuccess: () => client.invalidateQueries({ queryKey: inviteKeys.workspace(id) }),
+		onSuccess: () => client.invalidateQueries({ queryKey: Invite.QueryKeys.workspace(id) }),
 	});
 }
 
@@ -79,6 +73,6 @@ export function useRevokeInvite(id: string) {
 			if (!response.ok) throw new Error(await errorMessage(response));
 			return response.json();
 		},
-		onSuccess: () => client.invalidateQueries({ queryKey: inviteKeys.workspace(id) }),
+		onSuccess: () => client.invalidateQueries({ queryKey: Invite.QueryKeys.workspace(id) }),
 	});
 }

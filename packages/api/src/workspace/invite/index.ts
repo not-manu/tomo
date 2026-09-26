@@ -25,4 +25,9 @@ export namespace Invite {
 	export function normalizeEmail(email: string) {
 		return email.trim().toLowerCase();
 	}
+
+	export const QueryKeys = {
+		inbox: () => ["invites"] as const,
+		workspace: (id: string) => ["workspace", id, "invites"] as const,
+	};
 }

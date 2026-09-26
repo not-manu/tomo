@@ -22,4 +22,10 @@ export namespace Workspace {
 	export function path(workspace: Pick<Select, "id">) {
 		return `/w/${workspace.id}`;
 	}
+
+	export const QueryKeys = {
+		all: () => ["workspaces"] as const,
+		one: (id: string) => ["workspace", id] as const,
+		members: (id: string) => ["workspace", id, "members"] as const,
+	};
 }
