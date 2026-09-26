@@ -56,7 +56,11 @@ export default function HomePage() {
 			<div className="h-24 sm:h-32" />
 			<Section.Label index={1}>{Core.NAME}</Section.Label>
 			<div className="h-4" />
-			<Text.Heading className="max-w-120">{Core.DESCRIPTION}</Text.Heading>
+			<Text.Heading className="max-w-120">
+				The multiplayer workspace for humans
+				<br />
+				and agents
+			</Text.Heading>
 			<div className="h-8" />
 			<div className="flex flex-wrap items-center gap-2">
 				<Auth.Button />
