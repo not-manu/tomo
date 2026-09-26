@@ -19,16 +19,21 @@ Adobe Illustrator -> Figma
 Agents -> Tomo!
 
 
-- Solution
+- Solution / Demo
+
+ 
+  * Example of Screensharing problem -> Remote work easy.
+  * Example of Agents collaborating with humans! Agents get their own workspace.
 
 "works on my machine" - joke
 "works on our machine" - tomo
 
+  * shared localhost? 
 
-- Impact
- 
-  * Screensharing problem -> Remote work easy.
-  * Collaborative agents.
+
+- Impact / Future Roadmap
+
+( see Future roadmap section below )
 
 
 - What makes it different
