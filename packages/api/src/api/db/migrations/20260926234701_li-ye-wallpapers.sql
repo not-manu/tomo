@@ -1,0 +1,1 @@
+UPDATE `workspace` SET `wallpaper` = 'rolling-hills' WHERE `wallpaper` NOT IN ('rolling-hills', 'pine-pasture', 'cloudbreak', 'poppies', 'horses', 'snowline', 'tall-grass', 'hillside', 'haze', 'first-light');

@@ -1,34 +1,35 @@
+import { sql } from "drizzle-orm";
 import { Db } from "../api/db";
 import { User } from "../auth/user";
 
-type Wallpaper = { title: string; artist?: string; year?: number };
+const LiYe = { artist: "Li Ye", year: 2019 } as const;
 
-const presets = {
-	xinjiang: { title: "Season · Xinjiang" },
-	"starry-night": { title: "The Starry Night", artist: "Vincent van Gogh", year: 1889 },
-	"great-wave": { title: "The Great Wave off Kanagawa", artist: "Hokusai", year: 1831 },
-	"water-lilies": { title: "Water Lilies", artist: "Claude Monet", year: 1906 },
-	wanderer: {
-		title: "Wanderer above the Sea of Fog",
-		artist: "Caspar David Friedrich",
-		year: 1818,
-	},
-	"almond-blossom": { title: "Almond Blossom", artist: "Vincent van Gogh", year: 1890 },
-	"impression-sunrise": { title: "Impression, Sunrise", artist: "Claude Monet", year: 1872 },
-	"the-kiss": { title: "The Kiss", artist: "Gustav Klimt", year: 1908 },
-	"grande-jatte": { title: "A Sunday on La Grande Jatte", artist: "Georges Seurat", year: 1884 },
-} satisfies Record<string, Wallpaper>;
+export const wallpapers = {
+	"rolling-hills": { title: "Rolling Hills", ...LiYe },
+	"pine-pasture": { title: "Pine Pasture", ...LiYe },
+	cloudbreak: { title: "Cloudbreak", ...LiYe },
+	poppies: { title: "Poppies", ...LiYe },
+	horses: { title: "Horses", ...LiYe },
+	snowline: { title: "Snowline", ...LiYe },
+	"tall-grass": { title: "Tall Grass", ...LiYe },
+	hillside: { title: "Hillside", ...LiYe },
+	haze: { title: "Haze", ...LiYe },
+	"first-light": { title: "First Light", ...LiYe },
+} as const;
 
-export type WallpaperKey = keyof typeof presets;
-export const wallpapers: Record<WallpaperKey, Wallpaper> = presets;
+export type WallpaperKey = keyof typeof wallpapers;
 export const wallpaperKeys = Object.keys(wallpapers) as [WallpaperKey, ...WallpaperKey[]];
+export const defaultWallpaper: WallpaperKey = "rolling-hills";
 
 export const workspacesTable = Db.Table(
 	"workspace",
 	{
 		id: Db.Text("id").primaryKey().$defaultFn(Db.Id),
 		name: Db.Text("name").notNull(),
-		wallpaper: Db.Text("wallpaper", { enum: wallpaperKeys }).notNull().default("starry-night"),
+		wallpaper: Db.Text("wallpaper", { enum: wallpaperKeys })
+			.notNull()
+			// TODO: drop this legacy SQL default once a table rebuild can run with foreign keys off
+			.default(sql`'starry-night'`),
 		ownerId: Db.Text("owner_id")
 			.notNull()
 			.references(() => User.Table.id, { onDelete: "cascade" }),

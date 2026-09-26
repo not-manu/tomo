@@ -8,13 +8,14 @@ export function Image({
 	wallpaper: Workspace.Wallpaper;
 	className?: string;
 }) {
-	const painting = Workspace.Wallpapers[wallpaper];
+	const key = wallpaper in Workspace.Wallpapers ? wallpaper : Workspace.DefaultWallpaper;
+	const photo = Workspace.Wallpapers[key];
 	return (
 		<img
-			alt={painting.artist ? `${painting.title} by ${painting.artist}` : painting.title}
+			alt={`${photo.title} by ${photo.artist}`}
 			className={cn("size-full object-cover", className)}
 			draggable={false}
-			src={Workspace.wallpaperSrc(wallpaper)}
+			src={Workspace.wallpaperSrc(key)}
 		/>
 	);
 }

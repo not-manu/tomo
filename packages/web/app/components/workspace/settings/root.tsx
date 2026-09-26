@@ -17,8 +17,8 @@ export function Root({ workspace }: { workspace: Detail }) {
 			<Group
 				description={
 					owner
-						? "Pick a painting for the desktop. Everyone sees the same one."
-						: "Only the owner can change the desktop painting."
+						? "Pick a photo for the desktop. Everyone sees the same one."
+						: "Only the owner can change the desktop photo."
 				}
 				title="Wallpaper"
 			>

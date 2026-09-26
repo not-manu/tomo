@@ -1,12 +1,13 @@
 import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { Sync } from "../sync";
-import { wallpaperKeys, wallpapers, workspacesTable } from "./table-sql";
+import { defaultWallpaper, wallpaperKeys, wallpapers, workspacesTable } from "./table-sql";
 
 export namespace Workspace {
 	export const Table = workspacesTable;
 
 	export const Wallpapers = wallpapers;
+	export const DefaultWallpaper = defaultWallpaper;
 	export const Wallpaper = z.enum(wallpaperKeys);
 	export type Wallpaper = z.infer<typeof Wallpaper>;
 
@@ -29,7 +30,7 @@ export namespace Workspace {
 	}
 
 	export function wallpaperSrc(wallpaper: Wallpaper) {
-		return `/wallpapers/${wallpaper}.jpg`;
+		return `/wallpapers/${wallpaper}.webp`;
 	}
 
 	export const QueryKeys = {

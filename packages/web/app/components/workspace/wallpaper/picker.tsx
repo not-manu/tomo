@@ -26,7 +26,7 @@ export function Picker({
 	return (
 		<ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
 			{Workspace.Wallpaper.options.map((key) => {
-				const painting = Workspace.Wallpapers[key];
+				const photo = Workspace.Wallpapers[key];
 				const selected = key === workspace.wallpaper;
 				return (
 					<li key={key}>
@@ -53,9 +53,9 @@ export function Picker({
 								) : null}
 							</span>
 							<span className="flex flex-col px-0.5">
-								<span className="truncate font-medium text-sm">{painting.title}</span>
+								<span className="truncate font-medium text-sm">{photo.title}</span>
 								<span className="truncate text-muted-foreground text-xs">
-									{[painting.artist, painting.year].filter(Boolean).join(", ") || "Photograph"}
+									{photo.artist}, {photo.year}
 								</span>
 							</span>
 						</button>

@@ -13,7 +13,11 @@ export namespace WorkspaceAPI {
 		return Db.transaction(db, (tx) => {
 			const workspace = tx
 				.insert(Workspace.Table)
-				.values({ name: args.input.name, ownerId: args.owner.id })
+				.values({
+					name: args.input.name,
+					ownerId: args.owner.id,
+					wallpaper: Workspace.DefaultWallpaper,
+				})
 				.returning()
 				.get();
 			tx.insert(Member.Table)
