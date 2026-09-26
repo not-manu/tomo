@@ -7,5 +7,8 @@ export default [
 		route("privacy", "routes/site/privacy/page.tsx"),
 		route("terms", "routes/site/terms/page.tsx"),
 	]),
-	route("app", "routes/app/layout.tsx", [index("routes/app/page.tsx")]),
+	layout("routes/app/layout.tsx", [
+		route("app", "routes/app/page.tsx"),
+		route("w/:workspace", "routes/w/[workspace]/page.tsx"),
+	]),
 ] satisfies RouteConfig;
