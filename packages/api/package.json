@@ -22,6 +22,7 @@
 		"@hono/node-server": "^2.1.1",
 		"better-auth": "^1.7.6",
 		"better-sqlite3": "^13.0.3",
+		"dockerode": "^5.0.1",
 		"drizzle-orm": "^0.45.3",
 		"drizzle-zod": "^0.8.3",
 		"hono": "^4.13.9",
@@ -30,6 +31,7 @@
 	},
 	"devDependencies": {
 		"@types/better-sqlite3": "^9.6.0",
+		"@types/dockerode": "^4.0.1",
 		"@types/node": "^22.20.4",
 		"drizzle-kit": "^0.31.11",
 		"esbuild": "^0.28.2",

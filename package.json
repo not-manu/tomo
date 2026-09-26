@@ -22,7 +22,8 @@
 		"db:generate": "turbo db:generate",
 		"db:migrate": "turbo db:migrate",
 		"db:prod:studio": "./scripts/db-prod.sh studio",
-		"db:prod:migrate": "./scripts/db-prod.sh migrate"
+		"db:prod:migrate": "./scripts/db-prod.sh migrate",
+		"sandbox:build": "docker build -t tomo-sandbox packages/api/src/sandbox"
 	},
 	"author": "not-manu",
 	"license": "MIT",
