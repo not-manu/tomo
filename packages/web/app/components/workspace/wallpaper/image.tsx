@@ -11,7 +11,7 @@ export function Image({
 	const painting = Workspace.Wallpapers[wallpaper];
 	return (
 		<img
-			alt={`${painting.title} by ${painting.artist}`}
+			alt={painting.artist ? `${painting.title} by ${painting.artist}` : painting.title}
 			className={cn("size-full object-cover", className)}
 			draggable={false}
 			src={Workspace.wallpaperSrc(wallpaper)}

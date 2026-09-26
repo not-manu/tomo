@@ -55,7 +55,7 @@ export function Picker({
 							<span className="flex flex-col px-0.5">
 								<span className="truncate font-medium text-sm">{painting.title}</span>
 								<span className="truncate text-muted-foreground text-xs">
-									{painting.artist}, {painting.year}
+									{[painting.artist, painting.year].filter(Boolean).join(", ") || "Photograph"}
 								</span>
 							</span>
 						</button>

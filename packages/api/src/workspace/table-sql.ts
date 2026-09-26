@@ -1,7 +1,10 @@
 import { Db } from "../api/db";
 import { User } from "../auth/user";
 
-export const wallpapers = {
+type Wallpaper = { title: string; artist?: string; year?: number };
+
+const presets = {
+	xinjiang: { title: "Season · Xinjiang" },
 	"starry-night": { title: "The Starry Night", artist: "Vincent van Gogh", year: 1889 },
 	"great-wave": { title: "The Great Wave off Kanagawa", artist: "Hokusai", year: 1831 },
 	"water-lilies": { title: "Water Lilies", artist: "Claude Monet", year: 1906 },
@@ -14,9 +17,10 @@ export const wallpapers = {
 	"impression-sunrise": { title: "Impression, Sunrise", artist: "Claude Monet", year: 1872 },
 	"the-kiss": { title: "The Kiss", artist: "Gustav Klimt", year: 1908 },
 	"grande-jatte": { title: "A Sunday on La Grande Jatte", artist: "Georges Seurat", year: 1884 },
-} as const;
+} satisfies Record<string, Wallpaper>;
 
-export type WallpaperKey = keyof typeof wallpapers;
+export type WallpaperKey = keyof typeof presets;
+export const wallpapers: Record<WallpaperKey, Wallpaper> = presets;
 export const wallpaperKeys = Object.keys(wallpapers) as [WallpaperKey, ...WallpaperKey[]];
 
 export const workspacesTable = Db.Table(
