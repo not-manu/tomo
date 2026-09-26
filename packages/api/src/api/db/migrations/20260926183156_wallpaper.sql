@@ -1,0 +1,1 @@
+ALTER TABLE `workspace` ADD `wallpaper` text DEFAULT 'starry-night' NOT NULL;
