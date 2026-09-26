@@ -55,7 +55,10 @@ export function useCreateInvite(id: string) {
 	const client = useQueryClient();
 	return useMutation({
 		mutationFn: async (input: Invite.Create) => {
-			const response = await hono.api.workspace[":id"].invites.$post({ param: { id }, json: input });
+			const response = await hono.api.workspace[":id"].invites.$post({
+				param: { id },
+				json: input,
+			});
 			if (!response.ok) throw new Error(await errorMessage(response));
 			return response.json();
 		},

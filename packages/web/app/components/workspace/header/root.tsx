@@ -1,10 +1,10 @@
-import { ArrowLeft } from "lucide-react";
+import { Workspace } from "@tomo/api";
+import { ArrowLeft, Settings } from "lucide-react";
 import { Text } from "~/components/text";
 import { Tomo } from "~/components/tomo";
+import { Button } from "~/components/ui/button";
 import type { hono, InferHono } from "~/lib/hono";
 import { Members } from "../members";
-import { Danger } from "./danger";
-import { Rename } from "./rename";
 
 export type Detail = InferHono<(typeof hono.api.workspace)[":id"]["$get"]>;
 
@@ -27,8 +27,11 @@ export function Root({ workspace }: { workspace: Detail }) {
 				</div>
 				<div className="flex items-center gap-2">
 					<Members.Root workspace={workspace} />
-					{owner ? <Rename workspace={workspace} /> : null}
-					<Danger workspace={workspace} />
+					<Button aria-label="Workspace settings" asChild size="icon" variant="outline">
+						<Tomo.Link to={`${Workspace.path(workspace)}/settings`}>
+							<Settings />
+						</Tomo.Link>
+					</Button>
 				</div>
 			</div>
 		</div>

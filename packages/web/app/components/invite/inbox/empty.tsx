@@ -1,9 +1,9 @@
 import { Inbox } from "lucide-react";
 import {
-	Empty as EmptyRoot,
 	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
+	Empty as EmptyRoot,
 	EmptyTitle,
 } from "~/components/ui/empty";
 

@@ -1,8 +1,8 @@
 import { and, desc, eq } from "drizzle-orm";
 import { Db } from "../../api/db";
 import { User } from "../../auth/user";
-import { Member } from "../member";
 import { Workspace } from "..";
+import { Member } from "../member";
 import { Invite } from ".";
 
 export namespace InviteAPI {
@@ -96,10 +96,7 @@ export namespace InviteAPI {
 	export function decline(db: Db.Client, args: { invite: Ref; user: UserRef }) {
 		const invite = pendingFor(db, args);
 		if (!invite) return false;
-		db.update(Invite.Table)
-			.set({ status: "declined" })
-			.where(eq(Invite.Table.id, invite.id))
-			.run();
+		db.update(Invite.Table).set({ status: "declined" }).where(eq(Invite.Table.id, invite.id)).run();
 		return true;
 	}
 
@@ -127,7 +124,9 @@ export namespace InviteAPI {
 				.select({ userId: Member.Table.userId })
 				.from(Member.Table)
 				.innerJoin(User.Table, eq(Member.Table.userId, User.Table.id))
-				.where(and(eq(Member.Table.workspaceId, args.workspace.id), eq(User.Table.email, args.email)))
+				.where(
+					and(eq(Member.Table.workspaceId, args.workspace.id), eq(User.Table.email, args.email)),
+				)
 				.get() !== undefined
 		);
 	}

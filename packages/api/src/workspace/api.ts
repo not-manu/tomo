@@ -2,8 +2,8 @@ import { and, desc, eq } from "drizzle-orm";
 import { Db } from "../api/db";
 import { User } from "../auth/user";
 import { SandboxAPI } from "../sandbox/api";
-import { Member } from "./member";
 import { Workspace } from ".";
+import { Member } from "./member";
 
 export namespace WorkspaceAPI {
 	type Ref = Pick<Workspace.Select, "id">;
@@ -33,6 +33,7 @@ export namespace WorkspaceAPI {
 			.select({
 				id: Workspace.Table.id,
 				name: Workspace.Table.name,
+				wallpaper: Workspace.Table.wallpaper,
 				ownerId: Workspace.Table.ownerId,
 				createdAt: Workspace.Table.createdAt,
 				updatedAt: Workspace.Table.updatedAt,
@@ -50,10 +51,7 @@ export namespace WorkspaceAPI {
 			.select()
 			.from(Member.Table)
 			.where(
-				and(
-					eq(Member.Table.workspaceId, args.workspace.id),
-					eq(Member.Table.userId, args.user.id),
-				),
+				and(eq(Member.Table.workspaceId, args.workspace.id), eq(Member.Table.userId, args.user.id)),
 			)
 			.get();
 	}
@@ -78,10 +76,7 @@ export namespace WorkspaceAPI {
 	export function leave(db: Db.Client, args: { workspace: Ref; user: UserRef }) {
 		db.delete(Member.Table)
 			.where(
-				and(
-					eq(Member.Table.workspaceId, args.workspace.id),
-					eq(Member.Table.userId, args.user.id),
-				),
+				and(eq(Member.Table.workspaceId, args.workspace.id), eq(Member.Table.userId, args.user.id)),
 			)
 			.run();
 	}

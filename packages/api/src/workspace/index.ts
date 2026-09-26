@@ -1,9 +1,13 @@
 import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { workspacesTable } from "./table-sql";
+import { wallpaperKeys, wallpapers, workspacesTable } from "./table-sql";
 
 export namespace Workspace {
 	export const Table = workspacesTable;
+
+	export const Wallpapers = wallpapers;
+	export const Wallpaper = z.enum(wallpaperKeys);
+	export type Wallpaper = z.infer<typeof Wallpaper>;
 
 	export const Select = createSelectSchema(Table, {
 		createdAt: z.coerce.date(),
@@ -16,11 +20,15 @@ export namespace Workspace {
 	});
 	export type Create = z.infer<typeof Create>;
 
-	export const Update = Create.partial();
+	export const Update = Create.extend({ wallpaper: Wallpaper }).partial();
 	export type Update = z.infer<typeof Update>;
 
 	export function path(workspace: Pick<Select, "id">) {
 		return `/w/${workspace.id}`;
+	}
+
+	export function wallpaperSrc(wallpaper: Wallpaper) {
+		return `/wallpapers/${wallpaper}.jpg`;
 	}
 
 	export const QueryKeys = {

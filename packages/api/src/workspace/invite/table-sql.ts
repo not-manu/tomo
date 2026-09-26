@@ -1,7 +1,7 @@
 import { Db } from "../../api/db";
 import { User } from "../../auth/user";
-import { roles } from "../member/table-sql";
 import { Workspace } from "..";
+import { roles } from "../member/table-sql";
 
 export const statuses = ["pending", "accepted", "declined"] as const;
 

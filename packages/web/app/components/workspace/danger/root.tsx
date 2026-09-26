@@ -1,5 +1,4 @@
-import { LogOut, Trash2 } from "lucide-react";
-import { useNavigate } from "react-router";
+import type { Member, Workspace } from "@tomo/api";
 import { toast } from "sonner";
 import {
 	AlertDialog,
@@ -10,14 +9,22 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-	AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-import { Button } from "~/components/ui/button";
 import { useDeleteWorkspace, useLeaveWorkspace } from "~/hooks/use-workspace";
-import type { Detail } from "./root";
 
-export function Danger({ workspace }: { workspace: Detail }) {
-	const navigate = useNavigate();
+export type Target = Pick<Workspace.Select, "id" | "name"> & { role: Member.Role };
+
+export function Root({
+	workspace,
+	open,
+	onOpenChange,
+	onSuccess,
+}: {
+	workspace: Target;
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	onSuccess?: () => void;
+}) {
 	const remove = useDeleteWorkspace(workspace.id);
 	const leave = useLeaveWorkspace(workspace.id);
 	const owner = workspace.role === "owner";
@@ -27,26 +34,20 @@ export function Danger({ workspace }: { workspace: Detail }) {
 		try {
 			await action.mutateAsync();
 			toast.success(owner ? "Workspace deleted" : `Left ${workspace.name}`);
-			navigate("/app", { replace: true });
+			onOpenChange(false);
+			onSuccess?.();
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : "Something went wrong.");
 		}
 	}
 
 	return (
-		<AlertDialog>
-			<AlertDialogTrigger asChild>
-				<Button
-					aria-label={owner ? "Delete workspace" : "Leave workspace"}
-					size="icon"
-					variant="destructive"
-				>
-					{owner ? <Trash2 /> : <LogOut />}
-				</Button>
-			</AlertDialogTrigger>
+		<AlertDialog open={open} onOpenChange={onOpenChange}>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<AlertDialogTitle>{owner ? "Delete this workspace?" : "Leave this workspace?"}</AlertDialogTitle>
+					<AlertDialogTitle>
+						{owner ? "Delete this workspace?" : "Leave this workspace?"}
+					</AlertDialogTitle>
 					<AlertDialogDescription>
 						{owner
 							? `This deletes ${workspace.name}, its files and its sandbox for everyone. There is no undo.`
