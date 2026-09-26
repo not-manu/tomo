@@ -6,9 +6,11 @@
 - Problem
 
 "Work is multiplayer, but agents are singleplayer."
-"Future of collaboration!"
+
+> "Future of collaboration!"
 
   * Theme of the hackathon is "future of work!"
+
 
 - Inspiration
 
@@ -24,6 +26,9 @@ Agents -> Tomo!
 
 
 - Impact
+ 
+  * Screensharing problem -> Remote work easy.
+  * Collaborative agents.
 
 
 - What makes it different
@@ -41,5 +46,8 @@ Tomo: virtual machine + desktop!
 
 
 - Future Roadmap
+
+Every team has their own "Tomo" workspace.
+And do their best work there.
 
 
