@@ -1,11 +1,4 @@
-import {
-	mkdirSync,
-	readdirSync,
-	readFileSync,
-	rmSync,
-	statSync,
-	writeFileSync,
-} from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, posix, relative, resolve, sep } from "node:path";
 import type { Docker } from "../api/docker";
 import { DockerAPI } from "../api/docker/api";
@@ -22,7 +15,8 @@ export namespace SandboxAPI {
 	function host(id: string, path: string) {
 		const root = dir(id);
 		const target = resolve(root, `.${sep}${path.replace(/^\/+/, "")}`);
-		if (target !== root && !target.startsWith(root + sep)) throw new Error("Path escapes workspace");
+		if (target !== root && !target.startsWith(root + sep))
+			throw new Error("Path escapes workspace");
 		return target;
 	}
 

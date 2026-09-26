@@ -1,6 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Workspace } from "@tomo/api";
 import { errorMessage, hono } from "~/lib/hono";
+import { useSync } from "./use-sync";
+
+export function useWorkspaceSync() {
+	const client = useQueryClient();
+	useSync(Workspace.Events.updated, ({ workspaceId }) => {
+		client.invalidateQueries({ queryKey: Workspace.QueryKeys.one(workspaceId), exact: true });
+		client.invalidateQueries({ queryKey: Workspace.QueryKeys.all() });
+	});
+	useSync(Workspace.Events.removed, ({ workspaceId }) => {
+		client.resetQueries({ queryKey: Workspace.QueryKeys.one(workspaceId) });
+		client.invalidateQueries({ queryKey: Workspace.QueryKeys.all() });
+	});
+	useSync(Workspace.Events.members, ({ workspaceId }) => {
+		client.invalidateQueries({ queryKey: Workspace.QueryKeys.members(workspaceId) });
+		client.invalidateQueries({ queryKey: Workspace.QueryKeys.all() });
+	});
+}
 
 export function useWorkspaces() {
 	return useQuery({

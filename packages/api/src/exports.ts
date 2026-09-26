@@ -3,6 +3,8 @@ export type { Auth } from "./auth";
 export * from "./auth/user";
 export * from "./core";
 export * from "./sandbox";
+export * from "./sync";
 export * from "./workspace";
 export * from "./workspace/invite";
 export * from "./workspace/member";
+export * from "./workspace/presence";

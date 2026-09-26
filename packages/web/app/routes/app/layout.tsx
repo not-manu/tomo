@@ -1,10 +1,17 @@
 import { Navigate, Outlet, useLocation } from "react-router";
 import { Header } from "~/components/header";
+import { useInviteSync } from "~/hooks/use-invites";
+import { useSyncConnection } from "~/hooks/use-sync";
+import { useWorkspaceSync } from "~/hooks/use-workspace";
 import { useSession } from "~/lib/auth";
 
 export default function AppLayout() {
 	const location = useLocation();
 	const { data: session, isPending } = useSession();
+
+	useSyncConnection(Boolean(session));
+	useWorkspaceSync();
+	useInviteSync();
 
 	if (!isPending && !session) {
 		return <Navigate replace state={{ from: location }} to="/login" />;

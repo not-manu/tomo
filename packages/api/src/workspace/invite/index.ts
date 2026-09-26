@@ -1,5 +1,6 @@
 import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { Sync } from "../../sync";
 import { Member } from "../member";
 import { statuses, workspaceInvitesTable } from "./table-sql";
 
@@ -29,5 +30,10 @@ export namespace Invite {
 	export const QueryKeys = {
 		inbox: () => ["invites"] as const,
 		workspace: (id: string) => ["workspace", id, "invites"] as const,
+	};
+
+	export const Events = {
+		inbox: Sync.event("invite.inbox", z.object({})),
+		workspace: Sync.event("invite.workspace", z.object({ workspaceId: z.string() })),
 	};
 }

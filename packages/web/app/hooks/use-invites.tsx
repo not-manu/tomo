@@ -1,6 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Invite, Workspace } from "@tomo/api";
 import { errorMessage, hono } from "~/lib/hono";
+import { useSync } from "./use-sync";
+
+export function useInviteSync() {
+	const client = useQueryClient();
+	useSync(Invite.Events.inbox, () => {
+		client.invalidateQueries({ queryKey: Invite.QueryKeys.inbox() });
+	});
+	useSync(Invite.Events.workspace, ({ workspaceId }) => {
+		client.invalidateQueries({ queryKey: Invite.QueryKeys.workspace(workspaceId) });
+	});
+}
 
 export function useInbox() {
 	return useQuery({

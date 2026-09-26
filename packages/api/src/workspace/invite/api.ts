@@ -95,9 +95,9 @@ export namespace InviteAPI {
 
 	export function decline(db: Db.Client, args: { invite: Ref; user: UserRef }) {
 		const invite = pendingFor(db, args);
-		if (!invite) return false;
+		if (!invite) return undefined;
 		db.update(Invite.Table).set({ status: "declined" }).where(eq(Invite.Table.id, invite.id)).run();
-		return true;
+		return invite;
 	}
 
 	export function revoke(db: Db.Client, invite: Ref) {

@@ -1,4 +1,5 @@
 import { Create as CreateNamespace } from "./create";
+import { Cursors as CursorsNamespace } from "./cursors";
 import { Danger as DangerNamespace } from "./danger";
 import { Header as HeaderNamespace } from "./header";
 import { List as ListNamespace } from "./list";
@@ -8,6 +9,7 @@ import { Wallpaper as WallpaperNamespace } from "./wallpaper";
 
 export namespace Workspace {
 	export import Create = CreateNamespace;
+	export import Cursors = CursorsNamespace;
 	export import Danger = DangerNamespace;
 	export import Header = HeaderNamespace;
 	export import List = ListNamespace;

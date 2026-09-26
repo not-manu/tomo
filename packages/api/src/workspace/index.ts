@@ -1,5 +1,6 @@
 import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { Sync } from "../sync";
 import { wallpaperKeys, wallpapers, workspacesTable } from "./table-sql";
 
 export namespace Workspace {
@@ -35,5 +36,13 @@ export namespace Workspace {
 		all: () => ["workspaces"] as const,
 		one: (id: string) => ["workspace", id] as const,
 		members: (id: string) => ["workspace", id, "members"] as const,
+	};
+
+	const Ref = z.object({ workspaceId: z.string() });
+
+	export const Events = {
+		updated: Sync.event("workspace.updated", Ref),
+		removed: Sync.event("workspace.removed", Ref),
+		members: Sync.event("workspace.members", Ref),
 	};
 }

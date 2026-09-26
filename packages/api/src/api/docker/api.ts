@@ -35,13 +35,13 @@ export namespace DockerAPI {
 	}
 
 	export async function remove(name: string) {
-		await client
-			.getContainer(name)
-			.remove({ force: true })
-			.catch(ignore(404));
+		await client.getContainer(name).remove({ force: true }).catch(ignore(404));
 	}
 
-	export async function exec(container: Docker.Container, opts: Docker.Exec): Promise<Docker.Result> {
+	export async function exec(
+		container: Docker.Container,
+		opts: Docker.Exec,
+	): Promise<Docker.Result> {
 		const exec = await container.exec({
 			Cmd: opts.cmd,
 			WorkingDir: opts.cwd,

@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import app from "./api/app";
 import { DbAPI } from "./api/db/api";
 import { Env } from "./api/env";
+import { SocketAPI } from "./api/socket/api";
 
 DbAPI.migrate(DbAPI.instance());
 
@@ -12,6 +13,9 @@ const server = new Hono()
 	.use("*", serveStatic({ root: "../web/build/client" }))
 	.get("*", serveStatic({ path: "../web/build/client/index.html" }));
 
-serve({ fetch: server.fetch, port: Env.PORT }, (info) => {
-	console.log(`listening on http://localhost:${info.port}`);
-});
+SocketAPI.inject(
+	serve({ fetch: server.fetch, port: Env.PORT }, (info) => {
+		console.log(`listening on http://localhost:${info.port}`);
+	}),
+	server,
+);

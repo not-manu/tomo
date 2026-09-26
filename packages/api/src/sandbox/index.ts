@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Sync } from "../sync";
 
 export namespace Sandbox {
 	export const Image = "tomo-sandbox";
@@ -28,4 +29,8 @@ export namespace Sandbox {
 		timeout: z.number().int().positive().max(600).default(Timeout),
 	});
 	export type Run = z.infer<typeof Run>;
+
+	export const Events = {
+		changed: Sync.event("sandbox.changed", z.object({ workspaceId: z.string(), path: z.string() })),
+	};
 }
