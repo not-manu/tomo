@@ -1,1 +1,2 @@
 - [ ] Make the README.md pretty!
+- [ ] Need to creat e welcome to tomo computer pdf
