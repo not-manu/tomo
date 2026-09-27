@@ -1,2 +1,1 @@
-- [ ] Setup Google Agent Platform + API Key 
 - [ ] Make the README.md pretty!
