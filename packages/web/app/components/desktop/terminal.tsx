@@ -57,8 +57,9 @@ export function Terminal({ windowId }: { windowId: string }) {
 		const xterm = new XTerm({
 			theme,
 			fontFamily: '"Berkeley Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
-			fontSize: 12,
-			lineHeight: 1.2,
+			fontSize: 13,
+			lineHeight: 1.25,
+			cursorStyle: "block",
 			cursorBlink: true,
 			scrollback: 2000,
 		});
@@ -140,7 +141,7 @@ export function Terminal({ windowId }: { windowId: string }) {
 	useEffect(() => () => clearTimeout(typingTimer.current), []);
 
 	return (
-		<div className="relative size-full overflow-hidden bg-[#100F0F] p-2">
+		<div className="relative size-full overflow-hidden bg-[#100F0F] px-3 pt-1 pb-3 [&_.xterm-viewport]:[scrollbar-width:none]">
 			<div className="size-full" ref={container} />
 			{typing ? (
 				<div className="pointer-events-none absolute top-2 right-3 flex items-center gap-1.5 rounded-full bg-white/10 py-0.5 pr-2.5 pl-0.5 text-[11px] text-neutral-200 backdrop-blur">

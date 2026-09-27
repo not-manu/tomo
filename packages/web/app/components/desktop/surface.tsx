@@ -108,6 +108,7 @@ export function Surface({
 						onMaximize={() => update.mutate({ windowId: window.id, maximized: !window.maximized })}
 						onMove={(next) => drag(window.id, next)}
 						remote={local?.id === window.id ? undefined : other?.user}
+						dark
 						title="Terminal"
 						z={window.z}
 					>
