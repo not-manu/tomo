@@ -51,6 +51,7 @@ if [ "${1:-}" = "--check" ]; then
 fi
 
 SANDBOX=$(git show "v$NEXT:packages/api/src/sandbox/Dockerfile" "v$NEXT:packages/api/src/sandbox/codex.toml" | shasum | cut -c1-12)
+CADDY=$(git show "v$NEXT:infra/Caddyfile" | shasum | cut -c1-12)
 
 REMOTE="set -e
 sudo install -d -o 1000 -g 1000 /data/tomo
@@ -63,6 +64,7 @@ sudo docker image inspect tomo-sandbox:$SANDBOX >/dev/null 2>&1 || sudo docker b
 sudo docker tag tomo-sandbox:$SANDBOX tomo-sandbox:latest
 cd /opt/tomo/src/infra
 sudo VERSION=$NEXT docker compose up -d --build --remove-orphans
+grep -qx $CADDY /opt/tomo/caddy.sha 2>/dev/null || { sudo docker compose restart caddy; echo $CADDY | sudo tee /opt/tomo/caddy.sha >/dev/null; }
 {
 	sudo docker image prune -f >/dev/null
 	sudo docker images tomo-api --format '{{.Tag}}' | sort -V | head -n -2 | xargs -r -I{} sudo docker image rm tomo-api:{} >/dev/null

@@ -1,3 +1,8 @@
 tomo.computer {
 	reverse_proxy api:8666
 }
+
+*.tomo.computer {
+	tls internal
+	reverse_proxy api:8666
+}

@@ -10,7 +10,7 @@ import {
 } from "node:fs";
 import { mkdir as mkdirAsync, writeFile } from "node:fs/promises";
 import { dirname, join, posix, relative, resolve, sep } from "node:path";
-import { Readable } from "node:stream";
+import { type Duplex, Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import { promisify } from "node:util";
@@ -165,6 +165,12 @@ export namespace SandboxAPI {
 
 	export async function exec(id: string, cmd: string[]) {
 		return DockerAPI.exec(await container(id), { cmd });
+	}
+
+	const Relay = `const n=require("net"),p=+process.argv[1];const go=h=>{let up=false;const s=n.connect(p,h[0]);s.on("error",()=>{if(!up&&h[1])go(h.slice(1));else process.exit(1)});s.on("connect",()=>{up=true;process.stdin.pipe(s);s.pipe(process.stdout)});s.on("close",()=>{if(up)process.exit(0)})};go(["127.0.0.1","::1"])`;
+
+	export async function connect(id: string, port: number, socket: Duplex) {
+		await DockerAPI.bridge(await container(id), ["node", "-e", Relay, String(port)], socket);
 	}
 
 	function name(id: string) {

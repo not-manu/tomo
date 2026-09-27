@@ -1,4 +1,4 @@
-import { PassThrough } from "node:stream";
+import { type Duplex, PassThrough } from "node:stream";
 import Dockerode from "dockerode";
 import type { Docker } from ".";
 
@@ -101,6 +101,21 @@ export namespace DockerAPI {
 			exec.resize({ w: size.cols, h: size.rows }).catch(() => undefined);
 		await resize(opts.size);
 		return { stream, resize };
+	}
+
+	export async function bridge(container: Docker.Container, cmd: string[], socket: Duplex) {
+		const exec = await container.exec({
+			Cmd: cmd,
+			AttachStdin: true,
+			AttachStdout: true,
+			AttachStderr: true,
+		});
+		const stream = await exec.start({ hijack: true, stdin: true });
+		client.modem.demuxStream(stream, socket, new PassThrough().resume());
+		stream.on("end", () => socket.end());
+		stream.on("error", () => socket.destroy());
+		socket.on("close", () => stream.destroy());
+		socket.pipe(stream);
 	}
 
 	function ignore(statusCode: number) {

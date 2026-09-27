@@ -1,3 +1,4 @@
+import { Browser as BrowserComponent } from "./browser";
 import { Dock as DockComponent } from "./dock";
 import { Editor as EditorComponent } from "./editor";
 import { FileIcon as FileIconComponent } from "./file-icon";
@@ -11,6 +12,7 @@ import { Terminal as TerminalComponent } from "./terminal";
 import { Window as WindowComponent } from "./window";
 
 export namespace Desktop {
+	export const Browser = BrowserComponent;
 	export const Dock = DockComponent;
 	export const Editor = EditorComponent;
 	export const FileIcon = FileIconComponent;

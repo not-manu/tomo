@@ -1,10 +1,17 @@
-import { DesktopWindow, type Presence, Sandbox, type Workspace as WorkspaceModel } from "@tomo/api";
+import {
+	DesktopWindow,
+	type Presence,
+	Preview as PreviewModel,
+	Sandbox,
+	type Workspace as WorkspaceModel,
+} from "@tomo/api";
 import { type PointerEvent, useEffect, useRef, useState } from "react";
 import { Workspace } from "~/components/workspace";
 import { basename, hasFiles, useUpload } from "~/hooks/use-files";
 import { useLive, useLiveEvent } from "~/hooks/use-live";
 import { useCreateWindow, useRemoveWindow, useUpdateWindow, useWindows } from "~/hooks/use-windows";
 import { cn } from "~/lib/utils";
+import { Browser } from "./browser";
 import { Dock } from "./dock";
 import { Editor } from "./editor";
 import { DesktopFolder, Files } from "./files";
@@ -89,6 +96,7 @@ export function Surface({
 
 	function title(window: DesktopWindow.Select) {
 		if (window.app === "terminal") return "Terminal";
+		if (window.app === "browser") return window.path ?? "Browser";
 		if (window.app === "finder")
 			return window.path && window.path !== "/" ? basename(window.path) : "Home";
 		return basename(window.path ?? "Preview");
@@ -107,6 +115,15 @@ export function Surface({
 			);
 		}
 		if (window.app === "editor") return <Editor path={window.path ?? ""} />;
+		if (window.app === "browser") {
+			return (
+				<Browser
+					address={window.path ?? PreviewModel.DefaultAddress}
+					onNavigate={(path) => update.mutate({ windowId: window.id, path })}
+					workspaceId={workspace.id}
+				/>
+			);
+		}
 		return <Preview path={window.path ?? ""} workspaceId={workspace.id} />;
 	}
 
@@ -181,6 +198,13 @@ export function Surface({
 							icon: "/apps/finder.png",
 							running: windows.some((window) => window.app === "finder"),
 							onOpen: () => create.mutate({ desktopId, app: "finder", path: "/" }),
+						},
+						{
+							name: "Browser",
+							icon: "/apps/browser.png",
+							running: windows.some((window) => window.app === "browser"),
+							onOpen: () =>
+								create.mutate({ desktopId, app: "browser", path: PreviewModel.DefaultAddress }),
 						},
 						{
 							name: "Terminal",

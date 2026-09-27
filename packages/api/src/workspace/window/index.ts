@@ -9,7 +9,7 @@ export namespace DesktopWindow {
 
 	export const Max = 12;
 
-	export const App = z.enum(["terminal", "finder", "preview", "editor"]);
+	export const App = z.enum(["terminal", "finder", "preview", "editor", "browser"]);
 	export type App = z.infer<typeof App>;
 
 	export const Frame = z.object({

@@ -13,7 +13,7 @@ export const workspaceWindowsTable = Db.Table(
 		desktopId: Db.Text("desktop_id")
 			.notNull()
 			.references(() => Desktop.Table.id, { onDelete: "cascade" }),
-		app: Db.Text("app", { enum: ["terminal", "finder", "preview", "editor"] }).notNull(),
+		app: Db.Text("app", { enum: ["terminal", "finder", "preview", "editor", "browser"] }).notNull(),
 		path: Db.Text("path"),
 		x: Db.Real("x").notNull(),
 		y: Db.Real("y").notNull(),

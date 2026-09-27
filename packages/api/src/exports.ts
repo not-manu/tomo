@@ -10,5 +10,6 @@ export * from "./workspace/document";
 export * from "./workspace/invite";
 export * from "./workspace/member";
 export * from "./workspace/presence";
+export * from "./workspace/preview";
 export * from "./workspace/terminal";
 export * from "./workspace/window";

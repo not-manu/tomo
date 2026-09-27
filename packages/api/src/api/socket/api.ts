@@ -1,3 +1,6 @@
+import { EventEmitter } from "node:events";
+import type { IncomingMessage, Server } from "node:http";
+import type { Duplex } from "node:stream";
 import type { ServerType } from "@hono/node-server";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
@@ -12,9 +15,17 @@ export namespace SocketAPI {
 
 	export const upgrade = node.upgradeWebSocket;
 
-	export function inject(server: ServerType, app: Hono) {
+	export function inject(
+		server: Server,
+		app: Hono,
+		intercept: (request: IncomingMessage, socket: Duplex, head: Buffer) => boolean,
+	) {
 		root.route("/", app);
-		node.injectWebSocket(server);
+		const upgrades = new EventEmitter();
+		node.injectWebSocket(upgrades as unknown as ServerType);
+		server.on("upgrade", (request, socket, head) => {
+			if (!intercept(request, socket, head)) upgrades.emit("upgrade", request, socket, head);
+		});
 	}
 
 	export function keepAlive(ws: Context, interval = 25_000) {
