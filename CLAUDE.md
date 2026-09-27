@@ -1,1 +1,2 @@
 - this is a pnpm project so use pnpm
+- never ship a drizzle migration that rebuilds (`DROP TABLE`) a table other tables reference: the migrator runs in a transaction, so `PRAGMA foreign_keys=OFF` is ignored and `ON DELETE cascade` wipes the children. run new migrations against a copy of the db first and compare row counts; prefer data-only migrations.
