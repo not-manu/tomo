@@ -92,8 +92,8 @@ export function Terminal({ workspaceId }: { workspaceId: string }) {
 					aria-label="Command"
 					autoCapitalize="off"
 					autoComplete="off"
-					className="min-w-0 grow bg-transparent outline-none disabled:opacity-50"
-					disabled={running}
+					className="min-w-0 grow bg-transparent outline-none read-only:opacity-50"
+					readOnly={running}
 					ref={input}
 					spellCheck={false}
 				/>
