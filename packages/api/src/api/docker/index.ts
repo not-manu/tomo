@@ -18,6 +18,8 @@ export namespace Docker {
 		cwd?: string;
 	};
 
+	export type Stats = { cpus: number; memoryBytes: number };
+
 	export type Result = {
 		exitCode: number;
 		stdout: string;

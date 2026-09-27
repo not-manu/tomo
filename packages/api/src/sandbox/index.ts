@@ -30,6 +30,17 @@ export namespace Sandbox {
 	});
 	export type Run = z.infer<typeof Run>;
 
+	const Meter = z.object({ used: z.number(), limit: z.number() });
+
+	export const Usage = z.object({
+		plan: z.object({ id: z.string(), name: z.string() }),
+		running: z.boolean(),
+		cpu: Meter,
+		memory: Meter,
+		storage: Meter,
+	});
+	export type Usage = z.infer<typeof Usage>;
+
 	export const Events = {
 		changed: Sync.event("sandbox.changed", z.object({ workspaceId: z.string(), path: z.string() })),
 	};

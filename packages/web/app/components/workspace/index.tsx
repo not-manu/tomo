@@ -6,6 +6,7 @@ import { List as ListNamespace } from "./list";
 import { Lobby as LobbyNamespace } from "./lobby";
 import { Members as MembersNamespace } from "./members";
 import { Settings as SettingsNamespace } from "./settings";
+import { Usage as UsageNamespace } from "./usage";
 import { Wallpaper as WallpaperNamespace } from "./wallpaper";
 
 export namespace Workspace {
@@ -17,5 +18,6 @@ export namespace Workspace {
 	export import Lobby = LobbyNamespace;
 	export import Members = MembersNamespace;
 	export import Settings = SettingsNamespace;
+	export import Usage = UsageNamespace;
 	export import Wallpaper = WallpaperNamespace;
 }

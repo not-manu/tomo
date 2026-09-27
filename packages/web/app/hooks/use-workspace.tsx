@@ -47,6 +47,19 @@ export function useWorkspace(id: string, options: { enabled?: boolean } = {}) {
 	});
 }
 
+export function useUsage(id: string) {
+	return useQuery({
+		queryKey: Workspace.QueryKeys.usage(id),
+		refetchInterval: 5_000,
+		staleTime: 0,
+		queryFn: async () => {
+			const response = await hono.api.workspace[":id"].usage.$get({ param: { id } });
+			if (!response.ok) throw new Error(await errorMessage(response));
+			return response.json();
+		},
+	});
+}
+
 export function useMembers(id: string) {
 	return useQuery({
 		queryKey: Workspace.QueryKeys.members(id),

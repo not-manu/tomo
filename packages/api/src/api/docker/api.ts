@@ -34,6 +34,22 @@ export namespace DockerAPI {
 		return created;
 	}
 
+	export async function stats(name: string): Promise<Docker.Stats | undefined> {
+		const handle = client.getContainer(name);
+		const info = await handle.inspect().catch(ignore(404));
+		if (!info?.State.Running) return undefined;
+		const raw = await handle.stats({ stream: false });
+		const cpuDelta = raw.cpu_stats.cpu_usage.total_usage - raw.precpu_stats.cpu_usage.total_usage;
+		const systemDelta = raw.cpu_stats.system_cpu_usage - (raw.precpu_stats.system_cpu_usage ?? 0);
+		const cpus = systemDelta > 0 ? (cpuDelta / systemDelta) * (raw.cpu_stats.online_cpus || 1) : 0;
+		const memory = raw.memory_stats as {
+			usage?: number;
+			stats?: { inactive_file?: number; total_inactive_file?: number };
+		};
+		const inactive = memory.stats?.inactive_file ?? memory.stats?.total_inactive_file ?? 0;
+		return { cpus: Math.max(0, cpus), memoryBytes: Math.max(0, (memory.usage ?? 0) - inactive) };
+	}
+
 	export async function remove(name: string) {
 		await client.getContainer(name).remove({ force: true }).catch(ignore(404));
 	}

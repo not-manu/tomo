@@ -1,9 +1,14 @@
+import { execFile } from "node:child_process";
 import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, posix, relative, resolve, sep } from "node:path";
+import { promisify } from "node:util";
 import type { Docker } from "../api/docker";
 import { DockerAPI } from "../api/docker/api";
 import { Env } from "../api/env";
+import { Plan } from "../plan";
 import { Sandbox } from ".";
+
+const exec = promisify(execFile);
 
 export namespace SandboxAPI {
 	export const Root = resolve(dirname(Env.DATABASE_PATH), "workspaces");
@@ -58,7 +63,27 @@ export namespace SandboxAPI {
 		return readFileSync(host(id, path));
 	}
 
-	export function write(id: string, path: string, data: string | Uint8Array) {
+	export async function storage(id: string) {
+		const { stdout } = await exec("du", ["-sk", dir(id)]);
+		return Number.parseInt(stdout, 10) * 1024 || 0;
+	}
+
+	export async function usage(id: string): Promise<Sandbox.Usage> {
+		const plan = Plan.of({ id });
+		const [stats, used] = await Promise.all([DockerAPI.stats(name(id)), storage(id)]);
+		return {
+			plan: { id: plan.id, name: plan.name },
+			running: stats !== undefined,
+			cpu: { used: stats?.cpus ?? 0, limit: plan.limits.cpus },
+			memory: { used: stats?.memoryBytes ?? 0, limit: plan.limits.memoryBytes },
+			storage: { used, limit: plan.limits.storageBytes },
+		};
+	}
+
+	export async function write(id: string, path: string, data: Uint8Array) {
+		if ((await storage(id)) + data.byteLength > Plan.of({ id }).limits.storageBytes) {
+			throw new Error("Storage limit reached");
+		}
 		const target = host(id, path);
 		mkdirSync(dirname(target), { recursive: true });
 		writeFileSync(target, data);
@@ -105,14 +130,15 @@ export namespace SandboxAPI {
 			throw new Error(`Image ${Sandbox.Image} not found; run pnpm sandbox:build`);
 		}
 		mkdirSync(dir(id), { recursive: true });
+		const { limits } = Plan.of({ id });
 		return DockerAPI.create({
 			name: name(id),
 			image: Sandbox.Image,
 			binds: { [dir(id)]: Sandbox.Mount },
 			labels: { "tomo.sandbox": id },
-			memoryBytes: 1024 * 1024 * 1024,
-			cpus: 1,
-			pids: 256,
+			memoryBytes: limits.memoryBytes,
+			cpus: limits.cpus,
+			pids: limits.pids,
 		});
 	}
 }

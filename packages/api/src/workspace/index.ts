@@ -41,6 +41,7 @@ export namespace Workspace {
 		all: () => ["workspaces"] as const,
 		one: (id: string) => ["workspace", id] as const,
 		members: (id: string) => ["workspace", id, "members"] as const,
+		usage: (id: string) => ["workspace", id, "usage"] as const,
 	};
 
 	const Ref = z.object({ workspaceId: z.string() });

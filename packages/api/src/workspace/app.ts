@@ -24,6 +24,7 @@ const one = new Hono<Middleware.IsMember>()
 		if (code === "ENOENT" || code === "ENOTDIR") return c.json({ message: "Not found" }, 404);
 		if (error.message === "Path escapes workspace") return c.json({ message: error.message }, 400);
 		if (error.message === "Already a member") return c.json({ message: error.message }, 409);
+		if (error.message === "Storage limit reached") return c.json({ message: error.message }, 413);
 		console.error(error);
 		return c.json({ message: "Internal error" }, 500);
 	})
@@ -81,6 +82,7 @@ const one = new Hono<Middleware.IsMember>()
 		SyncAPI.push({ users: [user.id] }, Workspace.Events.removed, { workspaceId: workspace.id });
 		return c.json({ ok: true });
 	})
+	.get("/usage", async (c) => c.json(await SandboxAPI.usage(c.get("workspace").id)))
 	.get("/members", (c) => c.json(WorkspaceAPI.members(DbAPI.instance(), c.get("workspace"))))
 	.get("/invites", (c) => c.json(InviteAPI.list(DbAPI.instance(), c.get("workspace"))))
 	.post("/invites", zValidator("json", Invite.Create), (c) => {
@@ -117,7 +119,7 @@ const one = new Hono<Middleware.IsMember>()
 	.put("/files", zValidator("query", Path), async (c) => {
 		const workspace = c.get("workspace");
 		const { path } = c.req.valid("query");
-		SandboxAPI.write(workspace.id, path, new Uint8Array(await c.req.arrayBuffer()));
+		await SandboxAPI.write(workspace.id, path, new Uint8Array(await c.req.arrayBuffer()));
 		SyncAPI.push({ workspace }, Sandbox.Events.changed, { workspaceId: workspace.id, path });
 		return c.json({ ok: true });
 	})
