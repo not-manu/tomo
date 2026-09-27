@@ -29,6 +29,7 @@ const schema = z.object({
 	BETTER_AUTH_SECRET: z.string().min(32),
 	GOOGLE_CLIENT_ID: z.string().optional(),
 	GOOGLE_CLIENT_SECRET: z.string().optional(),
+	OPENAI_API_KEY: z.string().startsWith("sk-").optional(),
 });
 
 export type Env = z.infer<typeof schema>;

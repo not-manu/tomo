@@ -5,15 +5,22 @@ import type { Docker } from ".";
 export namespace DockerAPI {
 	const client = new Dockerode();
 
-	export async function hasImage(image: string) {
+	export async function imageId(image: string) {
 		const found = await client.getImage(image).inspect().catch(ignore(404));
-		return found !== undefined;
+		return found?.Id;
 	}
 
-	export async function container(name: string): Promise<Docker.Container | undefined> {
+	export async function container(
+		name: string,
+		image: string,
+	): Promise<Docker.Container | undefined> {
 		const handle = client.getContainer(name);
 		const info = await handle.inspect().catch(ignore(404));
 		if (!info) return undefined;
+		if (info.Image !== image) {
+			await handle.remove({ force: true });
+			return undefined;
+		}
 		if (!info.State.Running) await handle.start();
 		return handle;
 	}

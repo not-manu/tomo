@@ -110,7 +110,12 @@ export namespace SandboxAPI {
 		return DockerAPI.shell(await container(id), {
 			cmd: args.cmd,
 			cwd: Sandbox.Mount,
-			env: ["TERM=xterm-256color", "COLORTERM=truecolor", "LANG=C.UTF-8"],
+			env: [
+				"TERM=xterm-256color",
+				"COLORTERM=truecolor",
+				"LANG=C.UTF-8",
+				...(Env.OPENAI_API_KEY ? [`OPENAI_API_KEY=${Env.OPENAI_API_KEY}`] : []),
+			],
 			size: args.size,
 		});
 	}
@@ -137,11 +142,10 @@ export namespace SandboxAPI {
 	}
 
 	async function attach(id: string) {
-		const existing = await DockerAPI.container(name(id));
+		const image = await DockerAPI.imageId(Sandbox.Image);
+		if (!image) throw new Error(`Image ${Sandbox.Image} not found; run pnpm sandbox:build`);
+		const existing = await DockerAPI.container(name(id), image);
 		if (existing) return existing;
-		if (!(await DockerAPI.hasImage(Sandbox.Image))) {
-			throw new Error(`Image ${Sandbox.Image} not found; run pnpm sandbox:build`);
-		}
 		mkdirSync(dir(id), { recursive: true });
 		const { limits } = Plan.of({ id });
 		return DockerAPI.create({
