@@ -32,8 +32,13 @@ export function Button() {
 	}
 
 	return (
-		<UiButton asChild size="lg">
-			<Tomo.Link to="/login">Log in</Tomo.Link>
-		</UiButton>
+		<>
+			<UiButton asChild size="lg">
+				<Tomo.Link to="/login">Sign up</Tomo.Link>
+			</UiButton>
+			<UiButton asChild size="lg" variant="secondary">
+				<Tomo.Link to="/login">Log in</Tomo.Link>
+			</UiButton>
+		</>
 	);
 }
