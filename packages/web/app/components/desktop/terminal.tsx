@@ -1,104 +1,153 @@
-import { Sandbox } from "@tomo/api";
-import { type FormEvent, useEffect, useRef, useState } from "react";
-import { errorMessage, hono } from "~/lib/hono";
+import "@xterm/xterm/css/xterm.css";
+import { type Presence, Terminal as TerminalModel } from "@tomo/api";
+import { FitAddon } from "@xterm/addon-fit";
+import { Terminal as XTerm } from "@xterm/xterm";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { User } from "~/components/user";
+import { useLive, useLiveEvent } from "~/hooks/use-live";
 
-type Entry = { id: number; cwd: string; cmd: string; stdout: string; stderr: string; code: number };
+const theme = {
+	background: "#100F0F",
+	foreground: "#CECDC3",
+	cursor: "#CECDC3",
+	selectionBackground: "#403E3C",
+	black: "#100F0F",
+	red: "#D14D41",
+	green: "#879A39",
+	yellow: "#D0A215",
+	blue: "#4385BE",
+	magenta: "#CE5D97",
+	cyan: "#3AA99F",
+	white: "#CECDC3",
+	brightBlack: "#575653",
+	brightRed: "#D14D41",
+	brightGreen: "#879A39",
+	brightYellow: "#D0A215",
+	brightBlue: "#4385BE",
+	brightMagenta: "#CE5D97",
+	brightCyan: "#3AA99F",
+	brightWhite: "#FFFCF0",
+};
 
-const MARK = "\u001e";
+export function Terminal({ windowId }: { windowId: string }) {
+	const live = useLive();
+	const container = useRef<HTMLDivElement>(null);
+	const term = useRef<XTerm>(undefined);
+	const fit = useRef<FitAddon>(undefined);
+	const exited = useRef(false);
+	const [typing, setTyping] = useState<Presence.User | null>(null);
+	const typingTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-function display(cwd: string) {
-	return cwd === "/" ? "~" : `~${cwd}`;
-}
+	function size(): TerminalModel.Size {
+		const proposed = fit.current?.proposeDimensions();
+		if (!proposed?.cols || !proposed.rows) return { cols: 80, rows: 24 };
+		return {
+			cols: Math.min(500, Math.max(2, proposed.cols)),
+			rows: Math.min(200, Math.max(2, proposed.rows)),
+		};
+	}
 
-function parse(stdout: string, fallback: string) {
-	const at = stdout.lastIndexOf(MARK);
-	if (at === -1) return { stdout, cwd: fallback };
-	const pwd = stdout.slice(at + MARK.length).trim();
-	const cwd = pwd.startsWith(Sandbox.Mount) ? pwd.slice(Sandbox.Mount.length) || "/" : fallback;
-	return { stdout: stdout.slice(0, at), cwd };
-}
-
-export function Terminal({ workspaceId }: { workspaceId: string }) {
-	const [entries, setEntries] = useState<Entry[]>([]);
-	const [cwd, setCwd] = useState("/");
-	const [running, setRunning] = useState(false);
-	const input = useRef<HTMLInputElement>(null);
-	const bottom = useRef<HTMLDivElement>(null);
-	const next = useRef(0);
+	function attach() {
+		exited.current = false;
+		live.send(TerminalModel.Events.attach, { windowId, size: size() });
+	}
 
 	useEffect(() => {
-		input.current?.focus();
+		if (!container.current) return;
+		const xterm = new XTerm({
+			theme,
+			fontFamily: '"Berkeley Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
+			fontSize: 12,
+			lineHeight: 1.2,
+			cursorBlink: true,
+			scrollback: 2000,
+		});
+		const addon = new FitAddon();
+		xterm.loadAddon(addon);
+		xterm.open(container.current);
+		term.current = xterm;
+		fit.current = addon;
+		xterm.focus();
+		return () => {
+			xterm.dispose();
+			term.current = undefined;
+			fit.current = undefined;
+		};
+	}, []);
+
+	const onData = useEffectEvent((data: string) => {
+		if (exited.current) return attach();
+		live.send(TerminalModel.Events.input, { windowId, data });
+	});
+	const onConnect = useEffectEvent(attach);
+	const onResize = useEffectEvent(() => size());
+	const send = live.send;
+
+	useEffect(() => {
+		const disposable = term.current?.onData(onData);
+		return () => disposable?.dispose();
 	}, []);
 
 	useEffect(() => {
-		bottom.current?.scrollIntoView({ block: "end" });
+		if (!live.connection) return;
+		onConnect();
+		return () => send(TerminalModel.Events.detach, { windowId });
+	}, [live.connection, send, windowId]);
+
+	useEffect(() => {
+		const element = container.current;
+		if (!element) return;
+		let last = "";
+		const observer = new ResizeObserver(() => {
+			const next = onResize();
+			const key = `${next.cols}x${next.rows}`;
+			if (key === last) return;
+			last = key;
+			send(TerminalModel.Events.resize, { windowId, size: next });
+		});
+		observer.observe(element);
+		return () => observer.disconnect();
+	}, [send, windowId]);
+
+	useLiveEvent(TerminalModel.Events.snapshot, (event) => {
+		if (event.windowId !== windowId) return;
+		term.current?.reset();
+		term.current?.resize(event.size.cols, event.size.rows);
+		term.current?.write(event.data);
 	});
 
-	async function submit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-		const cmd = input.current?.value.trim() ?? "";
-		if (!cmd || running) return;
-		if (input.current) input.current.value = "";
-		if (cmd === "clear") return setEntries([]);
-		setRunning(true);
-		const id = next.current++;
-		try {
-			const response = await hono.api.workspace[":id"].run.$post({
-				param: { id: workspaceId },
-				json: { cmd: `${cmd}\nprintf '${MARK}%s' "$PWD"`, cwd },
-			});
-			if (!response.ok) throw new Error(await errorMessage(response));
-			const result = await response.json();
-			const parsed = parse(result.stdout, cwd);
-			setEntries((all) => [
-				...all,
-				{ id, cwd, cmd, stdout: parsed.stdout, stderr: result.stderr, code: result.exitCode },
-			]);
-			setCwd(parsed.cwd);
-		} catch (error) {
-			const message = error instanceof Error ? error.message : "Something went wrong.";
-			setEntries((all) => [...all, { id, cwd, cmd, stdout: "", stderr: message, code: 1 }]);
-		} finally {
-			setRunning(false);
-			input.current?.focus();
-		}
-	}
+	useLiveEvent(TerminalModel.Events.output, (event) => {
+		if (event.windowId === windowId) term.current?.write(event.data);
+	});
+
+	useLiveEvent(TerminalModel.Events.size, (event) => {
+		if (event.windowId === windowId) term.current?.resize(event.size.cols, event.size.rows);
+	});
+
+	useLiveEvent(TerminalModel.Events.exit, (event) => {
+		if (event.windowId !== windowId) return;
+		exited.current = true;
+		term.current?.write("\r\n\x1b[2m[process exited — press any key to restart]\x1b[0m\r\n");
+	});
+
+	useLiveEvent(TerminalModel.Events.typing, (event) => {
+		if (event.windowId !== windowId) return;
+		setTyping(event.user);
+		clearTimeout(typingTimer.current);
+		typingTimer.current = setTimeout(() => setTyping(null), 1500);
+	});
+
+	useEffect(() => () => clearTimeout(typingTimer.current), []);
 
 	return (
-		<div
-			className="flex h-full flex-col overflow-y-auto bg-neutral-950 p-3 font-mono text-[12px] text-neutral-100 leading-relaxed"
-			onPointerUp={() => {
-				if (!window.getSelection()?.toString()) input.current?.focus();
-			}}
-		>
-			{entries.map((entry) => (
-				<div key={entry.id} className="whitespace-pre-wrap break-words">
-					<div>
-						<span className="text-blue-400">{display(entry.cwd)}</span>{" "}
-						<span className="text-neutral-500">$</span> {entry.cmd}
-					</div>
-					{entry.stdout ? <div>{entry.stdout.replace(/\n$/, "")}</div> : null}
-					{entry.stderr ? (
-						<div className="text-red-400">{entry.stderr.replace(/\n$/, "")}</div>
-					) : null}
+		<div className="relative size-full overflow-hidden bg-[#100F0F] p-2">
+			<div className="size-full" ref={container} />
+			{typing ? (
+				<div className="pointer-events-none absolute top-2 right-3 flex items-center gap-1.5 rounded-full bg-white/10 py-0.5 pr-2.5 pl-0.5 text-[11px] text-neutral-200 backdrop-blur">
+					<User.Stack size="xs" users={[typing]} />
+					{typing.name.split(" ")[0]} is typing
 				</div>
-			))}
-			<form className="flex items-center gap-2" onSubmit={submit}>
-				<span className="shrink-0">
-					<span className="text-blue-400">{display(cwd)}</span>{" "}
-					<span className="text-neutral-500">$</span>
-				</span>
-				<input
-					aria-label="Command"
-					autoCapitalize="off"
-					autoComplete="off"
-					className="min-w-0 grow bg-transparent outline-none read-only:opacity-50"
-					readOnly={running}
-					ref={input}
-					spellCheck={false}
-				/>
-			</form>
-			<div ref={bottom} />
+			) : null}
 		</div>
 	);
 }

@@ -5,6 +5,7 @@ import {
 	index,
 	integer,
 	primaryKey,
+	real,
 	sqliteTable,
 	text,
 	uniqueIndex,
@@ -22,6 +23,7 @@ export namespace Db {
 	export const Table = sqliteTable;
 	export const Text = text;
 	export const Int = integer;
+	export const Real = real;
 	export const Bool = (name: string) => integer(name, { mode: "boolean" });
 	export const Blob = (name: string) => blob(name, { mode: "buffer" });
 	export const Timestamp = (name: string) => integer(name, { mode: "timestamp_ms" });

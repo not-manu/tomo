@@ -9,3 +9,5 @@ export * from "./workspace/desktop";
 export * from "./workspace/invite";
 export * from "./workspace/member";
 export * from "./workspace/presence";
+export * from "./workspace/terminal";
+export * from "./workspace/window";

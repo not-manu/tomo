@@ -4,6 +4,9 @@ import { DbAPI } from "../../api/db/api";
 import type { Middleware } from "../../api/middleware";
 import { SyncAPI } from "../../sync/api";
 import { PresenceAPI } from "../presence/api";
+import { TerminalAPI } from "../terminal/api";
+import { DesktopWindow } from "../window";
+import { WindowAPI } from "../window/api";
 import { Desktop } from ".";
 import { DesktopAPI } from "./api";
 
@@ -41,14 +44,17 @@ const app = new Hono<Middleware.IsMember>()
 		changed(workspace);
 		return c.json(updated);
 	})
-	.delete("/:desktopId", (c) => {
+	.delete("/:desktopId", async (c) => {
 		const db = DbAPI.instance();
 		const workspace = c.get("workspace");
 		const desktop = DesktopAPI.get(db, { workspace, desktop: { id: c.req.param("desktopId") } });
 		if (!desktop) return c.json({ message: "Not found" }, 404);
+		const windows = WindowAPI.onDesktop(db, desktop);
 		DesktopAPI.remove(db, { workspace, desktop });
 		PresenceAPI.evict(workspace.id, desktop.id);
 		changed(workspace);
+		SyncAPI.push({ workspace }, DesktopWindow.Events.changed, { workspaceId: workspace.id });
+		await Promise.all(windows.map((window) => TerminalAPI.close(workspace.id, window.id)));
 		return c.json({ ok: true });
 	});
 

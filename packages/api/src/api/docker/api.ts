@@ -76,6 +76,26 @@ export namespace DockerAPI {
 		return { exitCode: ExitCode ?? 0, stdout: stdout.text(), stderr: stderr.text() };
 	}
 
+	export async function shell(
+		container: Docker.Container,
+		opts: Docker.Shell,
+	): Promise<Docker.Pty> {
+		const exec = await container.exec({
+			Cmd: opts.cmd,
+			WorkingDir: opts.cwd,
+			Env: opts.env,
+			Tty: true,
+			AttachStdin: true,
+			AttachStdout: true,
+			AttachStderr: true,
+		});
+		const stream = await exec.start({ hijack: true, stdin: true, Tty: true });
+		const resize = (size: Docker.Size) =>
+			exec.resize({ w: size.cols, h: size.rows }).catch(() => undefined);
+		await resize(opts.size);
+		return { stream, resize };
+	}
+
 	function ignore(statusCode: number) {
 		return (error: unknown) => {
 			if ((error as { statusCode?: number }).statusCode !== statusCode) throw error;

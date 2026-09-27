@@ -106,6 +106,19 @@ export namespace SandboxAPI {
 		});
 	}
 
+	export async function shell(id: string, args: { cmd: string[]; size: Docker.Size }) {
+		return DockerAPI.shell(await container(id), {
+			cmd: args.cmd,
+			cwd: Sandbox.Mount,
+			env: ["TERM=xterm-256color", "COLORTERM=truecolor", "LANG=C.UTF-8"],
+			size: args.size,
+		});
+	}
+
+	export async function exec(id: string, cmd: string[]) {
+		return DockerAPI.exec(await container(id), { cmd });
+	}
+
 	function name(id: string) {
 		return `tomo-sbx-${id}`;
 	}

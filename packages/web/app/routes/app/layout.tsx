@@ -3,6 +3,7 @@ import { Header } from "~/components/header";
 import { useDesktopSync } from "~/hooks/use-desktops";
 import { useInviteSync } from "~/hooks/use-invites";
 import { useSyncConnection } from "~/hooks/use-sync";
+import { useWindowSync } from "~/hooks/use-windows";
 import { useWorkspaceSync } from "~/hooks/use-workspace";
 import { useSession } from "~/lib/auth";
 
@@ -15,6 +16,7 @@ export default function AppLayout() {
 	useWorkspaceSync();
 	useInviteSync();
 	useDesktopSync();
+	useWindowSync();
 
 	if (!isPending && !session) {
 		return <Navigate replace state={{ from: location }} to="/login" />;

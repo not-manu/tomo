@@ -56,6 +56,11 @@ export namespace PresenceAPI {
 		send(workspaceId, id, peer.desktopId, Sync.encode(Presence.Events.cursor, peer.cursor));
 	}
 
+	export function relay(workspaceId: string, id: string, encode: (user: Presence.User) => string) {
+		const peer = rooms.get(workspaceId)?.get(id);
+		if (peer) send(workspaceId, id, peer.desktopId, encode(peer.cursor.user));
+	}
+
 	export function leave(workspaceId: string, id: string) {
 		const room = rooms.get(workspaceId);
 		const peer = room?.get(id);

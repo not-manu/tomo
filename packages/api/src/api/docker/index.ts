@@ -18,6 +18,20 @@ export namespace Docker {
 		cwd?: string;
 	};
 
+	export type Size = { cols: number; rows: number };
+
+	export type Shell = {
+		cmd: string[];
+		cwd: string;
+		env: string[];
+		size: Size;
+	};
+
+	export type Pty = {
+		stream: NodeJS.ReadWriteStream;
+		resize: (size: Size) => Promise<unknown>;
+	};
+
 	export type Stats = { cpus: number; memoryBytes: number };
 
 	export type Result = {

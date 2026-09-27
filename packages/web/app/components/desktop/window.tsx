@@ -1,8 +1,10 @@
+import type { DesktopWindow, Presence } from "@tomo/api";
 import type { PointerEvent, ReactNode } from "react";
 import { useRef } from "react";
+import { User } from "~/components/user";
 import { cn } from "~/lib/utils";
 
-export type Frame = { x: number; y: number; w: number; h: number };
+export type Frame = DesktopWindow.Frame;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -11,7 +13,9 @@ export function Window({
 	frame,
 	maximized,
 	z,
+	remote,
 	onMove,
+	onDrop,
 	onFocus,
 	onClose,
 	onMaximize,
@@ -21,15 +25,22 @@ export function Window({
 	frame: Frame;
 	maximized: boolean;
 	z: number;
+	remote?: Presence.User | undefined;
 	onMove: (frame: Frame) => void;
+	onDrop: (frame: Frame) => void;
 	onFocus: () => void;
 	onClose: () => void;
 	onMaximize: () => void;
 	children: ReactNode;
 }) {
-	const drag = useRef<{ x: number; y: number; frame: Frame; width: number; height: number }>(
-		undefined,
-	);
+	const drag = useRef<{
+		x: number;
+		y: number;
+		frame: Frame;
+		last: Frame;
+		width: number;
+		height: number;
+	}>(undefined);
 
 	function start(event: PointerEvent<HTMLDivElement>) {
 		if (maximized || event.button !== 0) return;
@@ -40,6 +51,7 @@ export function Window({
 			x: event.clientX,
 			y: event.clientY,
 			frame,
+			last: frame,
 			width: surface.width,
 			height: surface.height,
 		};
@@ -48,7 +60,7 @@ export function Window({
 	function move(event: PointerEvent<HTMLDivElement>) {
 		const current = drag.current;
 		if (!current) return;
-		onMove({
+		current.last = {
 			...current.frame,
 			x: clamp(
 				current.frame.x + (event.clientX - current.x) / current.width,
@@ -60,7 +72,14 @@ export function Window({
 				0,
 				1 - current.frame.h,
 			),
-		});
+		};
+		onMove(current.last);
+	}
+
+	function end() {
+		const current = drag.current;
+		drag.current = undefined;
+		if (current && current.last !== current.frame) onDrop(current.last);
 	}
 
 	return (
@@ -69,6 +88,7 @@ export function Window({
 			className={cn(
 				"absolute flex flex-col overflow-hidden border bg-background/95 shadow-2xl backdrop-blur-xl",
 				maximized ? "inset-0 rounded-none" : "rounded-xl",
+				remote && "transition-[left,top] duration-100 ease-linear",
 			)}
 			onPointerDownCapture={onFocus}
 			style={
@@ -88,9 +108,7 @@ export function Window({
 				className="relative flex h-8 shrink-0 cursor-default select-none items-center border-b px-3"
 				role="toolbar"
 				onDoubleClick={onMaximize}
-				onLostPointerCapture={() => {
-					drag.current = undefined;
-				}}
+				onLostPointerCapture={end}
 				onPointerDown={start}
 				onPointerMove={move}
 			>
@@ -114,6 +132,7 @@ export function Window({
 				<span className="pointer-events-none absolute inset-x-0 text-center text-muted-foreground text-xs">
 					{title}
 				</span>
+				{remote ? <User.Stack className="relative ml-auto" size="xs" users={[remote]} /> : null}
 			</div>
 			<div className="min-h-0 grow">{children}</div>
 		</section>

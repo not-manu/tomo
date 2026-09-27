@@ -18,6 +18,11 @@ import { Invite } from "./invite";
 import { InviteAPI } from "./invite/api";
 import { Presence } from "./presence";
 import { PresenceAPI } from "./presence/api";
+import { Terminal } from "./terminal";
+import { TerminalAPI } from "./terminal/api";
+import { DesktopWindow } from "./window";
+import { WindowAPI } from "./window/api";
+import windowApp from "./window/app";
 
 const Path = z.object({ path: z.string().default("/") });
 
@@ -29,7 +34,9 @@ const one = new Hono<Middleware.IsMember>()
 		if (error.message === "Path escapes workspace") return c.json({ message: error.message }, 400);
 		if (error.message === "Already a member") return c.json({ message: error.message }, 409);
 		if (error.message === "Storage limit reached") return c.json({ message: error.message }, 413);
-		if (error.message === "Desktop limit reached") return c.json({ message: error.message }, 409);
+		if (error.message === "Desktop limit reached" || error.message === "Window limit reached") {
+			return c.json({ message: error.message }, 409);
+		}
 		if (
 			error.message === "Cannot remove the last desktop" ||
 			error.message === "Order must include every desktop exactly once"
@@ -52,30 +59,55 @@ const one = new Hono<Middleware.IsMember>()
 		SocketAPI.upgrade((c) => {
 			const workspaceId = c.get("workspace").id;
 			const { id: userId, name, image } = c.get("identity").user;
+			const user = { id: userId, name, image };
 			const id = Core.Id();
 			return {
 				onOpen: (_, ws) => {
 					PresenceAPI.join(workspaceId, {
 						ws,
-						cursor: { id, user: { id: userId, name, image }, point: null },
+						cursor: { id, user, point: null },
 					});
 					SocketAPI.keepAlive(ws);
 				},
-				onMessage: (event) => {
+				onMessage: (event, ws) => {
 					const message = Sync.parse(event.data);
 					if (!message) return;
+					const workspace = { id: workspaceId };
 					const move = Sync.decode(Presence.Events.move, message);
 					if (move) return PresenceAPI.move(workspaceId, id, move.point);
+					const drag = Sync.decode(DesktopWindow.Events.drag, message);
+					if (drag) {
+						return PresenceAPI.relay(workspaceId, id, (user) =>
+							Sync.encode(DesktopWindow.Events.dragged, { ...drag, user }),
+						);
+					}
+					const input = Sync.decode(Terminal.Events.input, message);
+					if (input) return TerminalAPI.input({ ...input, ws, user });
+					const resize = Sync.decode(Terminal.Events.resize, message);
+					if (resize) return TerminalAPI.resize(resize.windowId, ws, resize.size);
+					const detach = Sync.decode(Terminal.Events.detach, message);
+					if (detach) return TerminalAPI.detach(detach.windowId, ws);
+					const attach = Sync.decode(Terminal.Events.attach, message);
+					if (attach) {
+						const window = WindowAPI.get(DbAPI.instance(), {
+							workspace,
+							window: { id: attach.windowId },
+						});
+						if (window?.app !== "terminal") return;
+						return void TerminalAPI.attach({ ...attach, workspaceId, ws }).catch((error) =>
+							console.error(`terminal ${attach.windowId} failed`, error),
+						);
+					}
 					const view = Sync.decode(Presence.Events.view, message);
 					const desktop =
 						view &&
-						DesktopAPI.get(DbAPI.instance(), {
-							workspace: { id: workspaceId },
-							desktop: { id: view.desktopId },
-						});
+						DesktopAPI.get(DbAPI.instance(), { workspace, desktop: { id: view.desktopId } });
 					if (desktop) PresenceAPI.view(workspaceId, id, desktop.id);
 				},
-				onClose: () => PresenceAPI.leave(workspaceId, id),
+				onClose: (_, ws) => {
+					TerminalAPI.detachAll(ws);
+					PresenceAPI.leave(workspaceId, id);
+				},
 			};
 		}),
 	)
@@ -107,6 +139,7 @@ const one = new Hono<Middleware.IsMember>()
 		return c.json({ ok: true });
 	})
 	.route("/desktops", desktopApp)
+	.route("/windows", windowApp)
 	.get("/usage", async (c) => c.json(await SandboxAPI.usage(c.get("workspace").id)))
 	.get("/members", (c) => c.json(WorkspaceAPI.members(DbAPI.instance(), c.get("workspace"))))
 	.get("/invites", (c) => c.json(InviteAPI.list(DbAPI.instance(), c.get("workspace"))))
