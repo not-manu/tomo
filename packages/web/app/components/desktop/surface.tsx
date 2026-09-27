@@ -179,11 +179,13 @@ export function Surface({
 						{
 							name: "Finder",
 							icon: "/apps/finder.png",
+							running: windows.some((window) => window.app === "finder"),
 							onOpen: () => create.mutate({ desktopId, app: "finder", path: "/" }),
 						},
 						{
 							name: "Terminal",
 							icon: "/apps/terminal.png",
+							running: windows.some((window) => window.app === "terminal"),
 							onOpen: () => create.mutate({ desktopId, app: "terminal" }),
 						},
 					]}
