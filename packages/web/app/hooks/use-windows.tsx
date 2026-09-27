@@ -74,7 +74,7 @@ type Update = { windowId: string } & DesktopWindow.Update;
 export function useUpdateWindow(workspaceId: string) {
 	return useOptimistic<Update>(
 		workspaceId,
-		(windows, { windowId, frame, maximized, focus }) => {
+		(windows, { windowId, frame, maximized, focus, path }) => {
 			const target = windows.find((window) => window.id === windowId);
 			const top = Math.max(
 				0,
@@ -88,6 +88,7 @@ export function useUpdateWindow(workspaceId: string) {
 							...window,
 							...frame,
 							maximized: maximized ?? window.maximized,
+							path: path ?? window.path,
 							z: focus ? top + 1 : window.z,
 						}
 					: window,

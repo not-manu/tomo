@@ -25,6 +25,7 @@ const app = new Hono<Middleware.IsMember>()
 			desktop,
 			user: c.get("identity").user,
 			app: input.app,
+			path: input.path,
 		});
 		changed(workspace);
 		return c.json(window, 201);

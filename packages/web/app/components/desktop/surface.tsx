@@ -1,10 +1,15 @@
-import { DesktopWindow, type Presence, type Workspace as WorkspaceModel } from "@tomo/api";
+import { DesktopWindow, type Presence, Sandbox, type Workspace as WorkspaceModel } from "@tomo/api";
 import { type PointerEvent, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Workspace } from "~/components/workspace";
+import { basename, hasFiles, useUpload } from "~/hooks/use-files";
 import { useLive, useLiveEvent } from "~/hooks/use-live";
 import { useCreateWindow, useRemoveWindow, useUpdateWindow, useWindows } from "~/hooks/use-windows";
 import { cn } from "~/lib/utils";
 import { Dock } from "./dock";
+import { DesktopFolder, Files } from "./files";
+import { Finder } from "./finder";
+import { Preview } from "./preview";
 import { Terminal } from "./terminal";
 import { type Frame, Window } from "./window";
 
@@ -30,6 +35,8 @@ export function Surface({
 	const create = useCreateWindow(workspace.id);
 	const update = useUpdateWindow(workspace.id);
 	const remove = useRemoveWindow(workspace.id);
+	const upload = useUpload(workspace.id);
+	const [over, setOver] = useState(false);
 	const [local, setLocal] = useState<{ id: string; frame: Frame } | null>(null);
 	const [remote, setRemote] = useState<Record<string, Remote>>({});
 	const expiry = useRef(new Map<string, ReturnType<typeof setTimeout>>());
@@ -72,6 +79,36 @@ export function Surface({
 		update.mutate({ windowId, frame: next }, { onSettled: () => setLocal(null) });
 	}
 
+	function open(entry: Sandbox.Entry) {
+		if (entry.type === "dir") {
+			return create.mutate({ desktopId, app: "finder", path: entry.path });
+		}
+		if (!Sandbox.preview(entry.path)) return toast.error(`No preview for ${entry.name}`);
+		create.mutate({ desktopId, app: "preview", path: entry.path });
+	}
+
+	function title(window: DesktopWindow.Select) {
+		if (window.app === "terminal") return "Terminal";
+		if (window.app === "finder")
+			return window.path && window.path !== "/" ? basename(window.path) : "Home";
+		return basename(window.path ?? "Preview");
+	}
+
+	function content(window: DesktopWindow.Select) {
+		if (window.app === "terminal") return <Terminal windowId={window.id} />;
+		if (window.app === "finder") {
+			return (
+				<Finder
+					onNavigate={(path) => update.mutate({ windowId: window.id, path })}
+					onOpen={open}
+					path={window.path ?? "/"}
+					workspaceId={workspace.id}
+				/>
+			);
+		}
+		return <Preview path={window.path ?? ""} workspaceId={workspace.id} />;
+	}
+
 	function track(event: PointerEvent<HTMLDivElement>) {
 		const rect = event.currentTarget.getBoundingClientRect();
 		onMove({
@@ -81,9 +118,24 @@ export function Surface({
 	}
 
 	return (
-		<div
+		<section
 			className={cn("relative isolate overflow-hidden bg-muted", className)}
+			aria-label="Desktop"
 			data-surface
+			onDragLeave={(event) => {
+				if (event.currentTarget === event.target) setOver(false);
+			}}
+			onDragOver={(event) => {
+				if (!hasFiles(event)) return;
+				event.preventDefault();
+				setOver(true);
+			}}
+			onDrop={(event) => {
+				if (!hasFiles(event)) return;
+				event.preventDefault();
+				setOver(false);
+				upload.mutate({ dir: DesktopFolder, files: [...event.dataTransfer.files] });
+			}}
 			onPointerLeave={() => onMove(null)}
 			onPointerMove={track}
 		>
@@ -91,6 +143,10 @@ export function Surface({
 				className="absolute inset-0 -z-10"
 				wallpaper={workspace.wallpaper}
 			/>
+			<Files onOpen={open} workspaceId={workspace.id} />
+			{over ? (
+				<div className="pointer-events-none absolute inset-0 z-[999] bg-white/10 ring-4 ring-white/60 ring-inset" />
+			) : null}
 			{windows.map((window) => {
 				const other = remote[window.id];
 				const current =
@@ -108,18 +164,31 @@ export function Surface({
 						onMaximize={() => update.mutate({ windowId: window.id, maximized: !window.maximized })}
 						onMove={(next) => drag(window.id, next)}
 						remote={local?.id === window.id ? undefined : other?.user}
-						dark
-						title="Terminal"
+						dark={window.app === "terminal"}
+						title={title(window)}
 						z={window.z}
 					>
-						<Terminal windowId={window.id} />
+						{content(window)}
 					</Window>
 				);
 			})}
 			<div className="absolute inset-x-0 bottom-3 z-[1000] flex justify-center">
-				<Dock onTerminal={() => create.mutate({ desktopId, app: "terminal" })} />
+				<Dock
+					apps={[
+						{
+							name: "Finder",
+							icon: "/apps/finder.png",
+							onOpen: () => create.mutate({ desktopId, app: "finder", path: "/" }),
+						},
+						{
+							name: "Terminal",
+							icon: "/apps/terminal.png",
+							onOpen: () => create.mutate({ desktopId, app: "terminal" }),
+						},
+					]}
+				/>
 			</div>
 			<Workspace.Cursors.Root className="absolute inset-0 z-[1001]" cursors={cursors} />
-		</div>
+		</section>
 	);
 }

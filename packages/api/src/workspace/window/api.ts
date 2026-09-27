@@ -50,6 +50,7 @@ export namespace WindowAPI {
 			desktop: DesktopRef;
 			user: UserRef;
 			app: DesktopWindow.App;
+			path?: string | undefined;
 		},
 	) {
 		return Db.transaction(db, (tx) => {
@@ -62,6 +63,7 @@ export namespace WindowAPI {
 					workspaceId: args.workspace.id,
 					desktopId: args.desktop.id,
 					app: args.app,
+					path: args.path ?? null,
 					x: 0.08 + offset,
 					y: 0.08 + offset,
 					w: 0.5,
@@ -79,12 +81,14 @@ export namespace WindowAPI {
 		args: { window: DesktopWindow.Select; input: DesktopWindow.Update },
 	) {
 		return Db.transaction(db, (tx) => {
-			const { frame, maximized, focus } = args.input;
+			const { frame, maximized, focus, path } = args.input;
 			const z = focus ? top(tx, { id: args.window.desktopId }).z : undefined;
-			if (!frame && maximized === undefined && z === undefined) return args.window;
+			if (!frame && maximized === undefined && z === undefined && path === undefined) {
+				return args.window;
+			}
 			return tx
 				.update(Table)
-				.set({ ...frame, maximized, z })
+				.set({ ...frame, maximized, z, path })
 				.where(eq(Table.id, args.window.id))
 				.returning()
 				.get();

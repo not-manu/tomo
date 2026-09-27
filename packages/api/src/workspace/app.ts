@@ -169,11 +169,31 @@ const one = new Hono<Middleware.IsMember>()
 	.get("/files", zValidator("query", Path), (c) =>
 		c.json(SandboxAPI.list(c.get("workspace").id, c.req.valid("query").path)),
 	)
-	.get("/files/content", zValidator("query", Path), (c) =>
-		c.body(new Uint8Array(SandboxAPI.read(c.get("workspace").id, c.req.valid("query").path)), 200, {
-			"Content-Type": "application/octet-stream",
-		}),
-	)
+	.get("/files/content", zValidator("query", Path), (c) => {
+		const id = c.get("workspace").id;
+		const { path } = c.req.valid("query");
+		const total = SandboxAPI.size(id, path);
+		const headers = {
+			"Content-Type": Sandbox.mime(path),
+			"Content-Security-Policy": "sandbox",
+			"X-Content-Type-Options": "nosniff",
+			"Accept-Ranges": "bytes",
+		};
+		const range = /^bytes=(\d*)-(\d*)$/.exec(c.req.header("Range") ?? "");
+		if (!range || total === 0) {
+			return c.body(new Uint8Array(SandboxAPI.read(id, path)), 200, headers);
+		}
+		const suffix = !range[1];
+		const start = suffix ? Math.max(0, total - Number(range[2])) : Number(range[1]);
+		const end = suffix || !range[2] ? total - 1 : Math.min(Number(range[2]), total - 1);
+		if (start > end || start >= total) {
+			return c.body(null, 416, { ...headers, "Content-Range": `bytes */${total}` });
+		}
+		return c.body(new Uint8Array(SandboxAPI.slice(id, path, start, end)), 206, {
+			...headers,
+			"Content-Range": `bytes ${start}-${end}/${total}`,
+		});
+	})
 	.put("/files", zValidator("query", Path), async (c) => {
 		const workspace = c.get("workspace");
 		const { path } = c.req.valid("query");

@@ -1,4 +1,8 @@
 import { Dock as DockComponent } from "./dock";
+import { FileIcon as FileIconComponent } from "./file-icon";
+import { Files as FilesComponent } from "./files";
+import { Finder as FinderComponent } from "./finder";
+import { Preview as PreviewComponent } from "./preview";
 import { Surface as SurfaceComponent } from "./surface";
 import { Tab as TabComponent } from "./tab";
 import { Tabs as TabsComponent } from "./tabs";
@@ -7,6 +11,10 @@ import { Window as WindowComponent } from "./window";
 
 export namespace Desktop {
 	export const Dock = DockComponent;
+	export const FileIcon = FileIconComponent;
+	export const Files = FilesComponent;
+	export const Finder = FinderComponent;
+	export const Preview = PreviewComponent;
 	export const Surface = SurfaceComponent;
 	export const Tab = TabComponent;
 	export const Tabs = TabsComponent;

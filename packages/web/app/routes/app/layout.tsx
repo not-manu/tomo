@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation, useMatch } from "react-router";
 import { Header } from "~/components/header";
 import { useDesktopSync } from "~/hooks/use-desktops";
+import { useFileSync } from "~/hooks/use-files";
 import { useInviteSync } from "~/hooks/use-invites";
 import { useSyncConnection } from "~/hooks/use-sync";
 import { useWindowSync } from "~/hooks/use-windows";
@@ -17,6 +18,7 @@ export default function AppLayout() {
 	useInviteSync();
 	useDesktopSync();
 	useWindowSync();
+	useFileSync();
 
 	if (!isPending && !session) {
 		return <Navigate replace state={{ from: location }} to="/login" />;

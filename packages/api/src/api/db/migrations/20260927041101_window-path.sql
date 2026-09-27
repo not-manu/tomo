@@ -1,0 +1,1 @@
+ALTER TABLE `workspace_window` ADD `path` text;

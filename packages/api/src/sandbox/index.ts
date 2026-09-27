@@ -30,6 +30,31 @@ export namespace Sandbox {
 	});
 	export type Run = z.infer<typeof Run>;
 
+	export const Previews = {
+		png: "image/png",
+		jpg: "image/jpeg",
+		jpeg: "image/jpeg",
+		gif: "image/gif",
+		webp: "image/webp",
+		avif: "image/avif",
+		mp4: "video/mp4",
+		webm: "video/webm",
+		mov: "video/quicktime",
+		m4v: "video/mp4",
+	} as const;
+
+	export function mime(path: string) {
+		const extension = path.split(".").pop()?.toLowerCase() ?? "";
+		return Previews[extension as keyof typeof Previews] ?? "application/octet-stream";
+	}
+
+	export function preview(path: string) {
+		const type = mime(path);
+		if (type.startsWith("image/")) return "image";
+		if (type.startsWith("video/")) return "video";
+		return undefined;
+	}
+
 	const Meter = z.object({ used: z.number(), limit: z.number() });
 
 	export const Usage = z.object({

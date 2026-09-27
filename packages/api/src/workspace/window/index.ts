@@ -9,7 +9,7 @@ export namespace DesktopWindow {
 
 	export const Max = 12;
 
-	export const App = z.enum(["terminal"]);
+	export const App = z.enum(["terminal", "finder", "preview"]);
 	export type App = z.infer<typeof App>;
 
 	export const Frame = z.object({
@@ -26,13 +26,18 @@ export namespace DesktopWindow {
 	});
 	export type Select = z.infer<typeof Select>;
 
-	export const Create = z.object({ desktopId: z.string(), app: App });
+	export const Create = z.object({
+		desktopId: z.string(),
+		app: App,
+		path: z.string().max(1024).optional(),
+	});
 	export type Create = z.infer<typeof Create>;
 
 	export const Update = z.object({
 		frame: Frame.optional(),
 		maximized: z.boolean().optional(),
 		focus: z.literal(true).optional(),
+		path: z.string().max(1024).optional(),
 	});
 	export type Update = z.infer<typeof Update>;
 

@@ -1,5 +1,15 @@
 import { execFile } from "node:child_process";
-import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+	closeSync,
+	mkdirSync,
+	openSync,
+	readdirSync,
+	readFileSync,
+	readSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from "node:fs";
 import { dirname, join, posix, relative, resolve, sep } from "node:path";
 import { promisify } from "node:util";
 import type { Docker } from "../api/docker";
@@ -61,6 +71,21 @@ export namespace SandboxAPI {
 
 	export function read(id: string, path: string): Buffer {
 		return readFileSync(host(id, path));
+	}
+
+	export function size(id: string, path: string) {
+		return statSync(host(id, path)).size;
+	}
+
+	export function slice(id: string, path: string, start: number, end: number) {
+		const buffer = Buffer.alloc(end - start + 1);
+		const fd = openSync(host(id, path), "r");
+		try {
+			readSync(fd, buffer, 0, buffer.length, start);
+		} finally {
+			closeSync(fd);
+		}
+		return buffer;
 	}
 
 	export async function storage(id: string) {
