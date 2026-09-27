@@ -30,6 +30,7 @@ export default function HomePage() {
 			<div className="h-16" />
 			<Demo.Root />
 			<div className="grow" />
+			<div className="h-16" />
 			<Footer.Site />
 		</main>
 	);
