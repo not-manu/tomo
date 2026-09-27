@@ -1,17 +1,10 @@
-import { Core } from "@tomo/api";
-import { Tomo } from "~/components/tomo";
 import { User } from "~/components/user";
+import { Crumbs } from "./crumbs";
 
 export function App() {
 	return (
-		<header className="flex h-16 items-center">
-			<Tomo.Link
-				aria-label={`${Core.NAME} home`}
-				className="text-foreground transition hover:opacity-70 focus-visible:opacity-70 focus-visible:outline-none"
-				to="/app"
-			>
-				<Tomo.Logo className="size-6" />
-			</Tomo.Link>
+		<header className="flex h-16 items-center gap-6">
+			<Crumbs />
 			<div className="grow" />
 			<User.Dropdown.Menu />
 		</header>

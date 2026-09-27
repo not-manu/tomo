@@ -34,10 +34,11 @@ export function useWorkspaces() {
 	});
 }
 
-export function useWorkspace(id: string) {
+export function useWorkspace(id: string, options: { enabled?: boolean } = {}) {
 	return useQuery({
 		queryKey: Workspace.QueryKeys.one(id),
 		retry: false,
+		enabled: options.enabled ?? true,
 		queryFn: async () => {
 			const response = await hono.api.workspace[":id"].$get({ param: { id } });
 			if (!response.ok) throw new Error(await errorMessage(response));
