@@ -46,17 +46,35 @@ if [ "$NEXT" != "$CURRENT" ]; then
 fi
 git tag -a "v$NEXT" -m "v$NEXT"
 
-pnpm exec turbo typecheck lint test
+if [ "${1:-}" = "--check" ]; then
+	pnpm exec turbo typecheck lint test
+fi
 
-gcloud compute scp .env.production tomo:.env.production --tunnel-through-iap --quiet
-git archive --format=tar "v$NEXT" | gcloud compute ssh tomo --tunnel-through-iap --quiet --command \
-	"sudo install -m 600 -o root -g root .env.production /opt/tomo/.env && rm .env.production && sudo install -d -o 1000 -g 1000 /data/tomo && sudo rm -rf /opt/tomo/src && sudo mkdir -p /opt/tomo/src && sudo tar -x -C /opt/tomo/src && sudo docker build -t tomo-sandbox /opt/tomo/src/packages/api/src/sandbox && cd /opt/tomo/src/infra && sudo VERSION=$NEXT docker compose up -d --build --remove-orphans"
+SANDBOX=$(git show "v$NEXT:packages/api/src/sandbox/Dockerfile" "v$NEXT:packages/api/src/sandbox/codex.toml" | shasum | cut -c1-12)
+
+REMOTE="set -e
+sudo install -d -o 1000 -g 1000 /data/tomo
+sudo rm -rf /opt/tomo/src
+sudo mkdir -p /opt/tomo/src
+sudo tar -x -C /opt/tomo/src
+sudo install -m 600 -o root -g root /opt/tomo/src/.env.production /opt/tomo/.env
+sudo rm /opt/tomo/src/.env.production
+sudo docker image inspect tomo-sandbox:$SANDBOX >/dev/null 2>&1 || sudo docker build -t tomo-sandbox:$SANDBOX /opt/tomo/src/packages/api/src/sandbox
+sudo docker tag tomo-sandbox:$SANDBOX tomo-sandbox:latest
+cd /opt/tomo/src/infra
+sudo VERSION=$NEXT docker compose up -d --build --remove-orphans
+{
+	sudo docker image prune -f >/dev/null
+	sudo docker images tomo-api --format '{{.Tag}}' | sort -V | head -n -2 | xargs -r -I{} sudo docker image rm tomo-api:{} >/dev/null
+	sudo docker images tomo-sandbox --format '{{.Tag}}' | grep -v -e latest -e $SANDBOX | xargs -r -I{} sudo docker image rm tomo-sandbox:{} >/dev/null
+	sudo docker builder prune -f --filter until=72h >/dev/null
+	df -h / | tail -1
+} || echo '⚠ server cleanup failed (deploy is fine)'"
+
+git archive --format=tar --add-file=.env.production "v$NEXT" \
+	| gcloud compute ssh tomo --tunnel-through-iap --quiet --command "$REMOTE"
 
 trap - ERR
-
-gcloud compute ssh tomo --tunnel-through-iap --quiet --command \
-	"sudo docker image prune -f >/dev/null && sudo docker images tomo-api --format '{{.Tag}}' | sort -V | head -n -2 | xargs -r -I{} sudo docker image rm tomo-api:{} >/dev/null && sudo docker builder prune -f --filter until=72h >/dev/null && df -h / | tail -1" \
-	|| echo "⚠ server cleanup failed (deploy is fine)"
 
 if ! git push --atomic --follow-tags; then
 	play_failure

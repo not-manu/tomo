@@ -1,10 +1,11 @@
 import "@xterm/xterm/css/xterm.css";
 import { Terminal as TerminalModel } from "@tomo/api";
-import { FitAddon } from "@xterm/addon-fit";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { Terminal as XTerm } from "@xterm/xterm";
 import { useEffect, useEffectEvent, useRef } from "react";
 import { useLive, useLiveEvent } from "~/hooks/use-live";
+
+const BaseFont = 13;
 
 const theme = {
 	background: "#100F0F",
@@ -33,18 +34,46 @@ export function Terminal({ windowId }: { windowId: string }) {
 	const live = useLive();
 	const container = useRef<HTMLDivElement>(null);
 	const term = useRef<XTerm>(undefined);
-	const fit = useRef<FitAddon>(undefined);
 	const exited = useRef(false);
 	const queue = useRef("");
 	const frame = useRef<number>(undefined);
 
+	function cell() {
+		const xterm = term.current;
+		const screen = xterm?.element?.querySelector(".xterm-screen")?.getBoundingClientRect();
+		if (!xterm || !screen?.width || !screen.height) return undefined;
+		const ratio = BaseFont / (xterm.options.fontSize ?? BaseFont);
+		return { w: (screen.width / xterm.cols) * ratio, h: (screen.height / xterm.rows) * ratio };
+	}
+
 	function size(): TerminalModel.Size {
-		const proposed = fit.current?.proposeDimensions();
-		if (!proposed?.cols || !proposed.rows) return { cols: 80, rows: 24 };
+		const base = cell();
+		const box = container.current;
+		if (!base || !box?.clientWidth || !box.clientHeight) return { cols: 80, rows: 24 };
 		return {
-			cols: Math.min(500, Math.max(2, proposed.cols)),
-			rows: Math.min(200, Math.max(2, proposed.rows)),
+			cols: Math.min(500, Math.max(2, Math.floor(box.clientWidth / base.w))),
+			rows: Math.min(200, Math.max(2, Math.floor(box.clientHeight / base.h))),
 		};
+	}
+
+	function scale() {
+		const xterm = term.current;
+		const base = cell();
+		const box = container.current;
+		if (!xterm || !base || !box?.clientWidth || !box.clientHeight) return;
+		const factor = Math.min(
+			box.clientWidth / (xterm.cols * base.w),
+			box.clientHeight / (xterm.rows * base.h),
+		);
+		let next = Math.min(32, Math.max(8, Math.floor(BaseFont * factor * 4) / 4));
+		if (next === xterm.options.fontSize) return;
+		xterm.options.fontSize = next;
+		for (let step = 0; step < 8 && next > 8; step++) {
+			const screen = xterm.element?.querySelector(".xterm-screen")?.getBoundingClientRect();
+			if (!screen || (screen.width <= box.clientWidth && screen.height <= box.clientHeight)) return;
+			next -= 0.25;
+			xterm.options.fontSize = next;
+		}
 	}
 
 	function drain() {
@@ -64,14 +93,12 @@ export function Terminal({ windowId }: { windowId: string }) {
 		const xterm = new XTerm({
 			theme,
 			fontFamily: '"Berkeley Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
-			fontSize: 13,
+			fontSize: BaseFont,
 			lineHeight: 1.25,
 			cursorStyle: "block",
 			cursorBlink: true,
 			scrollback: 2000,
 		});
-		const addon = new FitAddon();
-		xterm.loadAddon(addon);
 		xterm.open(container.current);
 		try {
 			const webgl = new WebglAddon();
@@ -79,13 +106,11 @@ export function Terminal({ windowId }: { windowId: string }) {
 			xterm.loadAddon(webgl);
 		} catch {}
 		term.current = xterm;
-		fit.current = addon;
 		xterm.focus();
 		return () => {
 			if (frame.current) cancelAnimationFrame(frame.current);
 			xterm.dispose();
 			term.current = undefined;
-			fit.current = undefined;
 		};
 	}, []);
 
@@ -94,7 +119,10 @@ export function Terminal({ windowId }: { windowId: string }) {
 		live.send(TerminalModel.Events.input, { windowId, data });
 	});
 	const onConnect = useEffectEvent(attach);
-	const onResize = useEffectEvent(() => size());
+	const onResize = useEffectEvent(() => {
+		scale();
+		return size();
+	});
 	const send = live.send;
 
 	useEffect(() => {
@@ -128,6 +156,7 @@ export function Terminal({ windowId }: { windowId: string }) {
 		queue.current = "";
 		term.current?.reset();
 		term.current?.resize(event.size.cols, event.size.rows);
+		scale();
 		term.current?.write(event.data);
 	});
 
@@ -141,6 +170,7 @@ export function Terminal({ windowId }: { windowId: string }) {
 		if (event.windowId !== windowId) return;
 		drain();
 		term.current?.resize(event.size.cols, event.size.rows);
+		scale();
 	});
 
 	useLiveEvent(TerminalModel.Events.exit, (event) => {
