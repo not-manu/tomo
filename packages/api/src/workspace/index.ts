@@ -29,6 +29,10 @@ export namespace Workspace {
 		return `/w/${workspace.id}`;
 	}
 
+	export function desktopPath(workspace: Pick<Select, "id">) {
+		return `${path(workspace)}/desktop`;
+	}
+
 	export function wallpaperSrc(wallpaper: Wallpaper) {
 		return `/wallpapers/${wallpaper}.webp`;
 	}
