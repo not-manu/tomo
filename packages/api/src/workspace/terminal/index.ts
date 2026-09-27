@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { Sync } from "../../sync";
-import { Presence } from "../presence";
 
 export namespace Terminal {
 	export const Size = z.object({
@@ -19,7 +18,6 @@ export namespace Terminal {
 		snapshot: Sync.event("terminal.snapshot", Ref.extend({ data: z.string(), size: Size })),
 		output: Sync.event("terminal.output", Ref.extend({ data: z.string() })),
 		size: Sync.event("terminal.size", Ref.extend({ size: Size })),
-		typing: Sync.event("terminal.typing", Ref.extend({ user: Presence.User })),
 		exit: Sync.event("terminal.exit", Ref),
 	};
 }

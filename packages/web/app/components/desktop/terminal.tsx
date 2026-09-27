@@ -1,10 +1,9 @@
 import "@xterm/xterm/css/xterm.css";
-import { type Presence, Terminal as TerminalModel } from "@tomo/api";
+import { Terminal as TerminalModel } from "@tomo/api";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { Terminal as XTerm } from "@xterm/xterm";
-import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { User } from "~/components/user";
+import { useEffect, useEffectEvent, useRef } from "react";
 import { useLive, useLiveEvent } from "~/hooks/use-live";
 
 const theme = {
@@ -38,8 +37,6 @@ export function Terminal({ windowId }: { windowId: string }) {
 	const exited = useRef(false);
 	const queue = useRef("");
 	const frame = useRef<number>(undefined);
-	const [typing, setTyping] = useState<Presence.User | null>(null);
-	const typingTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
 	function size(): TerminalModel.Size {
 		const proposed = fit.current?.proposeDimensions();
@@ -153,24 +150,9 @@ export function Terminal({ windowId }: { windowId: string }) {
 		term.current?.write("\r\n\x1b[2m[process exited — press any key to restart]\x1b[0m\r\n");
 	});
 
-	useLiveEvent(TerminalModel.Events.typing, (event) => {
-		if (event.windowId !== windowId) return;
-		setTyping(event.user);
-		clearTimeout(typingTimer.current);
-		typingTimer.current = setTimeout(() => setTyping(null), 1500);
-	});
-
-	useEffect(() => () => clearTimeout(typingTimer.current), []);
-
 	return (
 		<div className="relative size-full overflow-hidden bg-[#100F0F] px-3 pt-1 pb-3 [&_.xterm-viewport]:[scrollbar-width:none]">
 			<div className="size-full" ref={container} />
-			{typing ? (
-				<div className="pointer-events-none absolute top-2 right-3 flex items-center gap-1.5 rounded-full bg-white/10 py-0.5 pr-2.5 pl-0.5 text-[11px] text-neutral-200 backdrop-blur">
-					<User.Stack size="xs" users={[typing]} />
-					{typing.name.split(" ")[0]} is typing
-				</div>
-			) : null}
 		</div>
 	);
 }

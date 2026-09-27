@@ -82,7 +82,7 @@ const one = new Hono<Middleware.IsMember>()
 						);
 					}
 					const input = Sync.decode(Terminal.Events.input, message);
-					if (input) return TerminalAPI.input({ ...input, ws, user });
+					if (input) return void TerminalAPI.input(input.windowId, ws, input.data);
 					const resize = Sync.decode(Terminal.Events.resize, message);
 					if (resize) return TerminalAPI.resize(resize.windowId, ws, resize.size);
 					const detach = Sync.decode(Terminal.Events.detach, message);
