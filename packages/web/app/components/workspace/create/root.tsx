@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Workspace } from "@tomo/api";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -20,7 +20,7 @@ import { FieldGroup } from "~/components/ui/field";
 import { Spinner } from "~/components/ui/spinner";
 import { useCreateWorkspace } from "~/hooks/use-workspace";
 
-export function Root() {
+export function Root({ children }: { children?: ReactNode }) {
 	const [open, setOpen] = useState(false);
 	const navigate = useNavigate();
 	const create = useCreateWorkspace();
@@ -44,10 +44,12 @@ export function Root() {
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button>
-					<Plus data-icon="inline-start" />
-					New workspace
-				</Button>
+				{children ?? (
+					<Button>
+						<Plus data-icon="inline-start" />
+						New workspace
+					</Button>
+				)}
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-sm">
 				<DialogHeader>

@@ -25,12 +25,9 @@ export default function AppPage() {
 					) : null}
 				</TabsTrigger>
 			</TabsList>
-			<div className="flex flex-wrap items-end justify-between gap-6">
-				<div>
-					<Text.Heading>Welcome{firstName && `, ${firstName}`}</Text.Heading>
-					<Text.Subtext>Your workspaces, and the ones you've been invited to.</Text.Subtext>
-				</div>
-				<Workspace.Create.Root />
+			<div>
+				<Text.Heading>Welcome{firstName && `, ${firstName}`}</Text.Heading>
+				<Text.Subtext>Your workspaces, and the ones you've been invited to.</Text.Subtext>
 			</div>
 			<TabsContent value="workspaces">
 				<Workspace.List.Root />

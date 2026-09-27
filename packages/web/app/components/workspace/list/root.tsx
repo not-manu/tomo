@@ -1,4 +1,5 @@
 import { useWorkspaces } from "~/hooks/use-workspace";
+import { Create } from "../create";
 import { Empty } from "./empty";
 import { Item } from "./item";
 import { Loading } from "./loading";
@@ -15,6 +16,9 @@ export function Root() {
 			{workspaces.map((workspace) => (
 				<Item key={workspace.id} workspace={workspace} />
 			))}
+			<li>
+				<Create.Card />
+			</li>
 		</ul>
 	);
 }
