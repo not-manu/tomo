@@ -3,6 +3,7 @@ import { ChevronLeft, FilePlus } from "lucide-react";
 import { useState } from "react";
 import { basename, hasFiles, join, parent, useFiles, useUpload } from "~/hooks/use-files";
 import { cn } from "~/lib/utils";
+import { EntryMenu } from "./entry-menu";
 import { FileIcon } from "./file-icon";
 
 export function Finder({
@@ -85,26 +86,28 @@ export function Finder({
 			</div>
 			<div className="grid min-h-0 grow auto-rows-min grid-cols-[repeat(auto-fill,minmax(88px,1fr))] gap-2 overflow-y-auto p-3">
 				{entries.map((entry) => (
-					<button
-						className="group flex flex-col items-center gap-1.5 rounded-lg p-1.5 outline-none"
-						key={entry.path}
-						onClick={(event) => {
-							event.stopPropagation();
-							setSelected(entry.path);
-						}}
-						onDoubleClick={() => open(entry)}
-						type="button"
-					>
-						<FileIcon className="size-14" entry={entry} workspaceId={workspaceId} />
-						<span
-							className={cn(
-								"line-clamp-2 max-w-full break-all rounded px-1 text-center text-xs",
-								selected === entry.path && "bg-blue-500 text-white",
-							)}
+					<EntryMenu entry={entry} key={entry.path} onOpen={open} workspaceId={workspaceId}>
+						<button
+							className="group flex flex-col items-center gap-1.5 rounded-lg p-1.5 outline-none"
+							onClick={(event) => {
+								event.stopPropagation();
+								setSelected(entry.path);
+							}}
+							onContextMenu={() => setSelected(entry.path)}
+							onDoubleClick={() => open(entry)}
+							type="button"
 						>
-							{entry.name}
-						</span>
-					</button>
+							<FileIcon className="size-14" entry={entry} workspaceId={workspaceId} />
+							<span
+								className={cn(
+									"line-clamp-2 max-w-full break-all rounded px-1 text-center text-xs",
+									selected === entry.path && "bg-blue-500 text-white",
+								)}
+							>
+								{entry.name}
+							</span>
+						</button>
+					</EntryMenu>
 				))}
 				{!isPending && entries.length === 0 ? (
 					<p className="col-span-full py-10 text-center text-muted-foreground text-sm">

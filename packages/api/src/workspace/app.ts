@@ -255,6 +255,9 @@ const one = new Hono<Middleware.IsMember>()
 		const { path } = c.req.valid("query");
 		SandboxAPI.unlink(workspace.id, path);
 		SyncAPI.push({ workspace }, Sandbox.Events.changed, { workspaceId: workspace.id, path });
+		if (WindowAPI.forget(DbAPI.instance(), { workspace, path })) {
+			SyncAPI.push({ workspace }, DesktopWindow.Events.changed, { workspaceId: workspace.id });
+		}
 		return c.json({ ok: true });
 	})
 	.post("/mkdir", zValidator("json", Path), (c) => {

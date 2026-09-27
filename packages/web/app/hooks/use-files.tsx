@@ -82,6 +82,22 @@ function put(url: string, file: File, onProgress: (loaded: number) => void) {
 	});
 }
 
+export function useDeleteFile(workspaceId: string) {
+	const client = useQueryClient();
+	return useMutation({
+		mutationFn: async (path: string) => {
+			const response = await hono.api.workspace[":id"].files.$delete({
+				param: { id: workspaceId },
+				query: { path },
+			});
+			if (!response.ok) throw new Error(await errorMessage(response));
+		},
+		onSuccess: (_, path) => toast.success(`Deleted ${basename(path)}`),
+		onError: (error) => toast.error(error.message),
+		onSettled: () => client.invalidateQueries({ queryKey: FileKeys.all(workspaceId) }),
+	});
+}
+
 export function useUpload(workspaceId: string) {
 	const client = useQueryClient();
 	return useMutation({

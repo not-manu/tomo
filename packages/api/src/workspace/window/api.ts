@@ -98,4 +98,17 @@ export namespace WindowAPI {
 	export function remove(db: Db.Client, window: Ref) {
 		db.delete(Table).where(eq(Table.id, window.id)).run();
 	}
+
+	export function forget(db: Db.Client, args: { workspace: WorkspaceRef; path: string }) {
+		const parent = args.path.split("/").slice(0, -1).join("/") || "/";
+		const inside = (path: string | null) =>
+			path !== null && (path === args.path || path.startsWith(`${args.path}/`));
+		const affected = list(db, args.workspace).filter((window) => inside(window.path));
+		for (const window of affected) {
+			if (window.app === "finder") {
+				db.update(Table).set({ path: parent }).where(eq(Table.id, window.id)).run();
+			} else remove(db, window);
+		}
+		return affected.length > 0;
+	}
 }
