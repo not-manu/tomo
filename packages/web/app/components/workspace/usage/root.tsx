@@ -1,5 +1,7 @@
 import { Skeleton } from "~/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 import { useUsage } from "~/hooks/use-workspace";
+import { cn } from "~/lib/utils";
 import { Meter } from "./meter";
 
 function bytes(value: number) {
@@ -20,19 +22,22 @@ export function Root({ workspace }: { workspace: { id: string } }) {
 
 	return (
 		<div className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4">
-			<div className="flex flex-col gap-1.5 text-xs">
-				<span className="font-medium">{usage.plan.name} plan</span>
-				<span className="flex items-center gap-1.5 text-muted-foreground">
-					<span
-						className={
-							usage.running
-								? "size-1.5 rounded-full bg-green-600 dark:bg-green-400"
-								: "size-1.5 rounded-full bg-muted-foreground/50"
-						}
-					/>
-					{usage.running ? "Running" : "Asleep"}
-				</span>
-			</div>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<div className="flex cursor-default items-center gap-2 self-start text-xs">
+						<span
+							className={cn(
+								"size-1.5 rounded-full",
+								usage.running ? "bg-green-600 dark:bg-green-400" : "bg-muted-foreground/50",
+							)}
+						/>
+						<span className="font-medium">{usage.plan.name} plan</span>
+					</div>
+				</TooltipTrigger>
+				<TooltipContent>
+					{usage.running ? "Computer is running" : "Computer is asleep"}
+				</TooltipContent>
+			</Tooltip>
 			<Meter format={cores} label="CPU" limit={usage.cpu.limit} used={usage.cpu.used} />
 			<Meter format={bytes} label="Memory" limit={usage.memory.limit} used={usage.memory.used} />
 			<Meter format={bytes} label="Storage" limit={usage.storage.limit} used={usage.storage.used} />
