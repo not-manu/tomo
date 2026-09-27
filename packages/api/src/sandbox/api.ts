@@ -2,11 +2,13 @@ import { execFile } from "node:child_process";
 import {
 	createReadStream,
 	createWriteStream,
+	type FSWatcher,
 	mkdirSync,
 	readdirSync,
 	readFileSync,
 	rmSync,
 	statSync,
+	watch as watchFs,
 } from "node:fs";
 import { mkdir as mkdirAsync, writeFile } from "node:fs/promises";
 import { dirname, join, posix, relative, resolve, sep } from "node:path";
@@ -52,6 +54,7 @@ export namespace SandboxAPI {
 
 	export async function remove(id: string) {
 		containers.delete(id);
+		unwatch(id);
 		await DockerAPI.remove(name(id));
 		rmSync(dir(id), { recursive: true, force: true });
 	}
@@ -69,6 +72,35 @@ export namespace SandboxAPI {
 				modifiedAt: stats.mtime,
 			};
 		});
+	}
+
+	const watchers = new Map<string, FSWatcher>();
+
+	export function watch(id: string, path: string, onChange: () => void) {
+		const key = `${id}:${path}`;
+		if (watchers.has(key)) return;
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		try {
+			const watcher = watchFs(host(id, path), () => {
+				timer ??= setTimeout(() => {
+					timer = undefined;
+					onChange();
+				}, 200);
+			});
+			watcher.on("error", () => {
+				watcher.close();
+				watchers.delete(key);
+			});
+			watchers.set(key, watcher);
+		} catch {}
+	}
+
+	function unwatch(id: string) {
+		for (const [key, watcher] of watchers) {
+			if (!key.startsWith(`${id}:`)) continue;
+			watcher.close();
+			watchers.delete(key);
+		}
 	}
 
 	export function read(id: string, path: string): Buffer {

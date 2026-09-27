@@ -181,9 +181,15 @@ const one = new Hono<Middleware.IsMember>()
 		SyncAPI.push({ emails: [invite.email] }, Invite.Events.inbox, {});
 		return c.json({ ok: true });
 	})
-	.get("/files", zValidator("query", Path), (c) =>
-		c.json(SandboxAPI.list(c.get("workspace").id, c.req.valid("query").path)),
-	)
+	.get("/files", zValidator("query", Path), (c) => {
+		const workspace = c.get("workspace");
+		const { path } = c.req.valid("query");
+		const entries = SandboxAPI.list(workspace.id, path);
+		SandboxAPI.watch(workspace.id, path, () =>
+			SyncAPI.push({ workspace }, Sandbox.Events.changed, { workspaceId: workspace.id, path }),
+		);
+		return c.json(entries);
+	})
 	.get("/files/content", zValidator("query", Path), (c) => {
 		const id = c.get("workspace").id;
 		const { path } = c.req.valid("query");

@@ -55,11 +55,17 @@ export namespace PreviewAPI {
 		return `${req.headers["x-forwarded-proto"] ?? "http"}://${req.headers.host}`;
 	}
 
+	const Waiting = "x-tomo-waiting";
+
 	function waiting(res: ServerResponse, port: number) {
 		if (res.headersSent) return void res.destroy();
-		res.writeHead(503, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
+		res.writeHead(503, {
+			"content-type": "text/html; charset=utf-8",
+			"cache-control": "no-store",
+			[Waiting]: "1",
+		});
 		res.end(
-			`<!doctype html><meta http-equiv="refresh" content="1"><title>Waiting for :${port}</title><style>body{margin:0;height:100vh;display:grid;place-items:center;font:14px/1.5 Geist,system-ui,sans-serif;color:#6F6E69;background:#FFFCF0}@media(prefers-color-scheme:dark){body{background:#100F0F;color:#878580}}code{font-family:"Berkeley Mono",ui-monospace,monospace}</style><p>Waiting for something to run on <code>localhost:${port}</code>…</p>`,
+			`<!doctype html><script>setInterval(()=>fetch(location.href,{cache:"no-store"}).then(r=>{if(!r.headers.has("${Waiting}"))location.reload()},()=>{}),1000)</script><title>Waiting for :${port}</title><style>body{margin:0;height:100vh;display:grid;place-items:center;font:14px/1.5 Geist,system-ui,sans-serif;color:#6F6E69;background:#FFFCF0}@media(prefers-color-scheme:dark){body{background:#100F0F;color:#878580}}code{font-family:"Berkeley Mono",ui-monospace,monospace}</style><p>Waiting for something to run on <code>localhost:${port}</code>…</p>`,
 		);
 	}
 
