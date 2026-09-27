@@ -1,4 +1,3 @@
-import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useUsage } from "~/hooks/use-workspace";
 import { Meter } from "./meter";
@@ -16,35 +15,27 @@ function cores(value: number) {
 export function Root({ workspace }: { workspace: { id: string } }) {
 	const { data: usage, isPending, error } = useUsage(workspace.id);
 
-	if (isPending) return <Skeleton className="h-40" />;
-	if (error) return <p className="text-destructive text-sm">{error.message}</p>;
+	if (isPending) return <Skeleton className="h-8" />;
+	if (error) return <p className="text-destructive text-xs">{error.message}</p>;
 
 	return (
-		<div className="flex flex-col gap-6">
-			<div className="flex flex-wrap items-center justify-between gap-4">
-				<div className="flex items-center gap-2 text-sm">
-					<span className="rounded-full border px-2 py-0.5 font-medium">
-						{usage.plan.name} plan
-					</span>
-					<span className="text-muted-foreground">
-						{usage.running ? "Computer is running" : "Computer is asleep"}
-					</span>
-				</div>
-				{/* TODO: link to plans once paid tiers exist */}
-				<Button disabled size="sm" variant="outline">
-					Upgrade · soon
-				</Button>
+		<div className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4">
+			<div className="flex flex-col gap-1.5 text-xs">
+				<span className="font-medium">{usage.plan.name} plan</span>
+				<span className="flex items-center gap-1.5 text-muted-foreground">
+					<span
+						className={
+							usage.running
+								? "size-1.5 rounded-full bg-green-600 dark:bg-green-400"
+								: "size-1.5 rounded-full bg-muted-foreground/50"
+						}
+					/>
+					{usage.running ? "Running" : "Asleep"}
+				</span>
 			</div>
-			<div className="grid gap-6 sm:grid-cols-3">
-				<Meter format={cores} label="CPU" limit={usage.cpu.limit} used={usage.cpu.used} />
-				<Meter format={bytes} label="Memory" limit={usage.memory.limit} used={usage.memory.used} />
-				<Meter
-					format={bytes}
-					label="Storage"
-					limit={usage.storage.limit}
-					used={usage.storage.used}
-				/>
-			</div>
+			<Meter format={cores} label="CPU" limit={usage.cpu.limit} used={usage.cpu.used} />
+			<Meter format={bytes} label="Memory" limit={usage.memory.limit} used={usage.memory.used} />
+			<Meter format={bytes} label="Storage" limit={usage.storage.limit} used={usage.storage.used} />
 		</div>
 	);
 }

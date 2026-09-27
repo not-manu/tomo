@@ -1,7 +1,6 @@
 import { Separator } from "~/components/ui/separator";
 import { Danger } from "../danger";
 import type { Detail } from "../header/root";
-import { Usage } from "../usage";
 import { Wallpaper } from "../wallpaper";
 import { Group } from "./group";
 import { Name } from "./name";
@@ -24,13 +23,6 @@ export function Root({ workspace }: { workspace: Detail }) {
 				title="Wallpaper"
 			>
 				<Wallpaper.Picker readOnly={!owner} workspace={workspace} />
-			</Group>
-			<Separator />
-			<Group
-				description="What this workspace's computer is using right now, against its plan's limits."
-				title="Resources"
-			>
-				<Usage.Root workspace={workspace} />
 			</Group>
 			<Separator />
 			<Group
