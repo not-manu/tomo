@@ -1,4 +1,3 @@
 - [ ] Setup Google Agent Platform + API Key 
 - [ ] Setup OpenAI SDK/Bindings/Codex inside tomo.computer
 - [ ] Make the README.md pretty!
-- [ ] Mac Doc animation
