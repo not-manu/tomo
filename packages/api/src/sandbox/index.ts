@@ -41,6 +41,7 @@ export namespace Sandbox {
 		webm: "video/webm",
 		mov: "video/quicktime",
 		m4v: "video/mp4",
+		pdf: "application/pdf",
 	} as const;
 
 	export function mime(path: string) {
@@ -52,6 +53,7 @@ export namespace Sandbox {
 		const type = mime(path);
 		if (type.startsWith("image/")) return "image";
 		if (type.startsWith("video/")) return "video";
+		if (type === "application/pdf") return "pdf";
 		return undefined;
 	}
 

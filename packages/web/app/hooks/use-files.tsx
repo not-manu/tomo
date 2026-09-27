@@ -63,20 +63,56 @@ export function useFiles(workspaceId: string, path: string) {
 	});
 }
 
+function put(url: string, file: File, onProgress: (loaded: number) => void) {
+	return new Promise<void>((resolve, reject) => {
+		const request = new XMLHttpRequest();
+		request.open("PUT", url);
+		request.withCredentials = true;
+		request.upload.onprogress = (event) => onProgress(event.loaded);
+		request.onload = () => {
+			if (request.status >= 200 && request.status < 300) return resolve();
+			let message = "Upload failed";
+			try {
+				message = JSON.parse(request.responseText).message ?? message;
+			} catch {}
+			reject(new Error(message));
+		};
+		request.onerror = () => reject(new Error("Upload failed"));
+		request.send(file);
+	});
+}
+
 export function useUpload(workspaceId: string) {
 	const client = useQueryClient();
 	return useMutation({
 		mutationFn: async ({ dir, files }: { dir: string; files: File[] }) => {
-			for (const file of files) {
-				const url = hono.api.workspace[":id"].files.$url({
-					param: { id: workspaceId },
-					query: { path: join(dir, file.name) },
-				});
-				const response = await fetch(url, { method: "PUT", body: file, credentials: "include" });
-				if (!response.ok) throw new Error(await errorMessage(response));
+			const total = files.reduce((sum, file) => sum + file.size, 0);
+			const label = files.length === 1 ? (files[0]?.name ?? "file") : `${files.length} files`;
+			const toastId = total > 0 ? toast.loading(`Uploading ${label}… 0%`) : undefined;
+			let done = 0;
+			let shown = 0;
+			try {
+				for (const file of files) {
+					const url = hono.api.workspace[":id"].files
+						.$url({ param: { id: workspaceId }, query: { path: join(dir, file.name) } })
+						.toString();
+					await put(url, file, (loaded) => {
+						const percent = Math.floor(((done + loaded) / total) * 100);
+						if (toastId === undefined || percent === shown) return;
+						shown = percent;
+						toast.loading(`Uploading ${label}… ${percent}%`, { id: toastId });
+					});
+					done += file.size;
+					client.invalidateQueries({ queryKey: FileKeys.list(workspaceId, dir) });
+				}
+				if (toastId !== undefined) toast.success(`Uploaded ${label}`, { id: toastId });
+			} catch (error) {
+				const message = error instanceof Error ? error.message : "Upload failed";
+				if (toastId !== undefined) toast.error(message, { id: toastId });
+				else toast.error(message);
+				throw error;
 			}
 		},
-		onError: (error) => toast.error(error.message),
 		onSettled: () => client.invalidateQueries({ queryKey: FileKeys.all(workspaceId) }),
 	});
 }

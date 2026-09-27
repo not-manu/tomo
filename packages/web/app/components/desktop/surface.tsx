@@ -1,12 +1,12 @@
 import { DesktopWindow, type Presence, Sandbox, type Workspace as WorkspaceModel } from "@tomo/api";
 import { type PointerEvent, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { Workspace } from "~/components/workspace";
 import { basename, hasFiles, useUpload } from "~/hooks/use-files";
 import { useLive, useLiveEvent } from "~/hooks/use-live";
 import { useCreateWindow, useRemoveWindow, useUpdateWindow, useWindows } from "~/hooks/use-windows";
 import { cn } from "~/lib/utils";
 import { Dock } from "./dock";
+import { Editor } from "./editor";
 import { DesktopFolder, Files } from "./files";
 import { Finder } from "./finder";
 import { Preview } from "./preview";
@@ -83,8 +83,8 @@ export function Surface({
 		if (entry.type === "dir") {
 			return create.mutate({ desktopId, app: "finder", path: entry.path });
 		}
-		if (!Sandbox.preview(entry.path)) return toast.error(`No preview for ${entry.name}`);
-		create.mutate({ desktopId, app: "preview", path: entry.path });
+		const app = Sandbox.preview(entry.path) ? "preview" : "editor";
+		create.mutate({ desktopId, app, path: entry.path });
 	}
 
 	function title(window: DesktopWindow.Select) {
@@ -106,6 +106,7 @@ export function Surface({
 				/>
 			);
 		}
+		if (window.app === "editor") return <Editor path={window.path ?? ""} />;
 		return <Preview path={window.path ?? ""} workspaceId={workspace.id} />;
 	}
 

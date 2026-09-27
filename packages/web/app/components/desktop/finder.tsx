@@ -1,7 +1,7 @@
 import type { Sandbox } from "@tomo/api";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, FilePlus } from "lucide-react";
 import { useState } from "react";
-import { basename, hasFiles, parent, useFiles, useUpload } from "~/hooks/use-files";
+import { basename, hasFiles, join, parent, useFiles, useUpload } from "~/hooks/use-files";
 import { cn } from "~/lib/utils";
 import { FileIcon } from "./file-icon";
 
@@ -24,6 +24,14 @@ export function Finder({
 	function go(next: string) {
 		setSelected(null);
 		onNavigate(next);
+	}
+
+	async function create() {
+		const names = new Set(entries.map((entry) => entry.name));
+		let name = "untitled.txt";
+		for (let index = 2; names.has(name); index++) name = `untitled ${index}.txt`;
+		await upload.mutateAsync({ dir: path, files: [new File([""], name)] });
+		onOpen({ name, path: join(path, name), type: "file", size: 0, modifiedAt: new Date() });
 	}
 
 	function open(entry: Sandbox.Entry) {
@@ -66,9 +74,14 @@ export function Finder({
 				<span className="truncate font-medium text-sm">
 					{path === "/" ? "Home" : basename(path)}
 				</span>
-				{upload.isPending ? (
-					<span className="ml-auto text-muted-foreground text-xs">Uploading…</span>
-				) : null}
+				<button
+					aria-label="New file"
+					className="ml-auto flex size-7 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground"
+					onClick={() => void create().catch(() => undefined)}
+					type="button"
+				>
+					<FilePlus className="size-4" />
+				</button>
 			</div>
 			<div className="grid min-h-0 grow auto-rows-min grid-cols-[repeat(auto-fill,minmax(88px,1fr))] gap-2 overflow-y-auto p-3">
 				{entries.map((entry) => (

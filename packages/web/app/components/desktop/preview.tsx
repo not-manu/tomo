@@ -13,6 +13,8 @@ export function Preview({ workspaceId, path }: { workspaceId: string; path: stri
 				<video autoPlay className="max-h-full max-w-full" controls loop src={src}>
 					<track kind="captions" />
 				</video>
+			) : kind === "pdf" ? (
+				<iframe className="size-full bg-white" src={src} title={path} />
 			) : (
 				<p className="text-neutral-400 text-sm">No preview available</p>
 			)}

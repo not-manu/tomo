@@ -6,6 +6,7 @@ export * from "./sandbox";
 export * from "./sync";
 export * from "./workspace";
 export * from "./workspace/desktop";
+export * from "./workspace/document";
 export * from "./workspace/invite";
 export * from "./workspace/member";
 export * from "./workspace/presence";

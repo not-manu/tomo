@@ -2,6 +2,7 @@ import { Workspace as WorkspaceModel } from "@tomo/api";
 import { ArrowLeft } from "lucide-react";
 import { Navigate, useParams, useSearchParams } from "react-router";
 import { Desktop } from "~/components/desktop";
+import { Theme } from "~/components/theme";
 import { Tomo } from "~/components/tomo";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
@@ -51,6 +52,8 @@ export default function DesktopPage() {
 					) : (
 						<Skeleton className="h-9 w-48 rounded-xl" />
 					)}
+					<div className="grow" />
+					<Theme.Switch />
 				</div>
 				{workspace && active ? (
 					<Desktop.Surface

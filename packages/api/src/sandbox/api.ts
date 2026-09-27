@@ -1,16 +1,18 @@
 import { execFile } from "node:child_process";
 import {
-	closeSync,
+	createReadStream,
+	createWriteStream,
 	mkdirSync,
-	openSync,
 	readdirSync,
 	readFileSync,
-	readSync,
 	rmSync,
 	statSync,
-	writeFileSync,
 } from "node:fs";
+import { mkdir as mkdirAsync, writeFile } from "node:fs/promises";
 import { dirname, join, posix, relative, resolve, sep } from "node:path";
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import { promisify } from "node:util";
 import type { Docker } from "../api/docker";
 import { DockerAPI } from "../api/docker/api";
@@ -73,19 +75,12 @@ export namespace SandboxAPI {
 		return readFileSync(host(id, path));
 	}
 
-	export function size(id: string, path: string) {
-		return statSync(host(id, path)).size;
+	export function modified(id: string, path: string) {
+		return statSync(host(id, path)).mtimeMs;
 	}
 
-	export function slice(id: string, path: string, start: number, end: number) {
-		const buffer = Buffer.alloc(end - start + 1);
-		const fd = openSync(host(id, path), "r");
-		try {
-			readSync(fd, buffer, 0, buffer.length, start);
-		} finally {
-			closeSync(fd);
-		}
-		return buffer;
+	export function size(id: string, path: string) {
+		return statSync(host(id, path)).size;
 	}
 
 	export async function storage(id: string) {
@@ -110,8 +105,29 @@ export namespace SandboxAPI {
 			throw new Error("Storage limit reached");
 		}
 		const target = host(id, path);
-		mkdirSync(dirname(target), { recursive: true });
-		writeFileSync(target, data);
+		await mkdirAsync(dirname(target), { recursive: true });
+		await writeFile(target, data);
+	}
+
+	export async function upload(
+		id: string,
+		path: string,
+		body: ReadableStream<Uint8Array>,
+		bytes: number,
+	) {
+		if ((await storage(id)) + bytes > Plan.of({ id }).limits.storageBytes) {
+			throw new Error("Storage limit reached");
+		}
+		const target = host(id, path);
+		await mkdirAsync(dirname(target), { recursive: true });
+		await pipeline(
+			Readable.fromWeb(body as NodeReadableStream<Uint8Array>),
+			createWriteStream(target),
+		);
+	}
+
+	export function stream(id: string, path: string, range?: { start: number; end: number }) {
+		return Readable.toWeb(createReadStream(host(id, path), range)) as ReadableStream<Uint8Array>;
 	}
 
 	export function mkdir(id: string, path: string) {

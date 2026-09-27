@@ -14,6 +14,8 @@ import { Workspace } from ".";
 import { WorkspaceAPI } from "./api";
 import { DesktopAPI } from "./desktop/api";
 import desktopApp from "./desktop/app";
+import { Document } from "./document";
+import { DocumentAPI } from "./document/api";
 import { Invite } from "./invite";
 import { InviteAPI } from "./invite/api";
 import { Presence } from "./presence";
@@ -81,6 +83,18 @@ const one = new Hono<Middleware.IsMember>()
 							Sync.encode(DesktopWindow.Events.dragged, { ...drag, user }),
 						);
 					}
+					const docUpdate = Sync.decode(Document.Events.update, message);
+					if (docUpdate) {
+						return DocumentAPI.update(workspaceId, docUpdate.path, ws, docUpdate.update);
+					}
+					const docAwareness = Sync.decode(Document.Events.awareness, message);
+					if (docAwareness) {
+						return DocumentAPI.awareness(workspaceId, docAwareness.path, ws, docAwareness.update);
+					}
+					const docOpen = Sync.decode(Document.Events.open, message);
+					if (docOpen) return DocumentAPI.open(workspaceId, docOpen.path, ws);
+					const docClose = Sync.decode(Document.Events.close, message);
+					if (docClose) return DocumentAPI.close(workspaceId, docClose.path, ws);
 					const input = Sync.decode(Terminal.Events.input, message);
 					if (input) return void TerminalAPI.input(input.windowId, ws, input.data);
 					const resize = Sync.decode(Terminal.Events.resize, message);
@@ -106,6 +120,7 @@ const one = new Hono<Middleware.IsMember>()
 				},
 				onClose: (_, ws) => {
 					TerminalAPI.detachAll(ws);
+					DocumentAPI.closeAll(workspaceId, ws);
 					PresenceAPI.leave(workspaceId, id);
 				},
 			};
@@ -175,13 +190,16 @@ const one = new Hono<Middleware.IsMember>()
 		const total = SandboxAPI.size(id, path);
 		const headers = {
 			"Content-Type": Sandbox.mime(path),
-			"Content-Security-Policy": "sandbox",
+			...(Sandbox.preview(path) === "pdf" ? {} : { "Content-Security-Policy": "sandbox" }),
 			"X-Content-Type-Options": "nosniff",
 			"Accept-Ranges": "bytes",
 		};
 		const range = /^bytes=(\d*)-(\d*)$/.exec(c.req.header("Range") ?? "");
 		if (!range || total === 0) {
-			return c.body(new Uint8Array(SandboxAPI.read(id, path)), 200, headers);
+			return c.body(SandboxAPI.stream(id, path), 200, {
+				...headers,
+				"Content-Length": String(total),
+			});
 		}
 		const suffix = !range[1];
 		const start = suffix ? Math.max(0, total - Number(range[2])) : Number(range[1]);
@@ -189,15 +207,19 @@ const one = new Hono<Middleware.IsMember>()
 		if (start > end || start >= total) {
 			return c.body(null, 416, { ...headers, "Content-Range": `bytes */${total}` });
 		}
-		return c.body(new Uint8Array(SandboxAPI.slice(id, path, start, end)), 206, {
+		return c.body(SandboxAPI.stream(id, path, { start, end }), 206, {
 			...headers,
+			"Content-Length": String(end - start + 1),
 			"Content-Range": `bytes ${start}-${end}/${total}`,
 		});
 	})
 	.put("/files", zValidator("query", Path), async (c) => {
 		const workspace = c.get("workspace");
 		const { path } = c.req.valid("query");
-		await SandboxAPI.write(workspace.id, path, new Uint8Array(await c.req.arrayBuffer()));
+		const body = c.req.raw.body;
+		const bytes = Number(c.req.header("Content-Length") ?? 0);
+		if (body) await SandboxAPI.upload(workspace.id, path, body, bytes);
+		else await SandboxAPI.write(workspace.id, path, new Uint8Array());
 		SyncAPI.push({ workspace }, Sandbox.Events.changed, { workspaceId: workspace.id, path });
 		return c.json({ ok: true });
 	})
