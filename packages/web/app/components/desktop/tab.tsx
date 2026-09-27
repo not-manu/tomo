@@ -65,7 +65,7 @@ export function Tab({
 			{removable && !editing ? (
 				<button
 					aria-label={`Close ${name}`}
-					className="relative -mr-1 flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+					className="relative -mr-1 -ml-2 flex h-5 w-0 shrink-0 items-center justify-center overflow-hidden rounded-md text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground focus-visible:ml-0 focus-visible:w-5 focus-visible:opacity-100 group-hover:ml-0 group-hover:w-5 group-hover:opacity-100"
 					onClick={onRemove}
 					type="button"
 				>
