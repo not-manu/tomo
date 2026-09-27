@@ -114,7 +114,9 @@ export namespace SandboxAPI {
 				"TERM=xterm-256color",
 				"COLORTERM=truecolor",
 				"LANG=C.UTF-8",
-				...(Env.OPENAI_API_KEY ? [`OPENAI_API_KEY=${Env.OPENAI_API_KEY}`] : []),
+				...(Env.OPENAI_API_KEY
+					? [`OPENAI_API_KEY=${Env.OPENAI_API_KEY}`, `CODEX_API_KEY=${Env.OPENAI_API_KEY}`]
+					: []),
 			],
 			size: args.size,
 		});

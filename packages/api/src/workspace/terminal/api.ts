@@ -30,6 +30,9 @@ export namespace TerminalAPI {
 
 	const pidFile = (windowId: string) => `/tmp/.tomo-${windowId}.pid`;
 
+	const codexLogin =
+		'[ -n "$OPENAI_API_KEY" ] && printenv OPENAI_API_KEY | codex login --with-api-key >/dev/null 2>&1';
+
 	function session(workspaceId: string, windowId: string, size: Terminal.Size) {
 		const current = starting.get(windowId);
 		if (current) return current;
@@ -43,7 +46,7 @@ export namespace TerminalAPI {
 
 	async function spawn(workspaceId: string, windowId: string, size: Terminal.Size) {
 		const pty = await SandboxAPI.shell(workspaceId, {
-			cmd: ["bash", "-c", `echo $$ > ${pidFile(windowId)}; exec bash -l`],
+			cmd: ["bash", "-c", `echo $$ > ${pidFile(windowId)}; ${codexLogin}; exec bash -l`],
 			size,
 		});
 		const term = new headless.Terminal({ ...size, scrollback: 2000, allowProposedApi: true });
