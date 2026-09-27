@@ -67,7 +67,7 @@ sudo VERSION=$NEXT docker compose up -d --build --remove-orphans
 	sudo docker image prune -f >/dev/null
 	sudo docker images tomo-api --format '{{.Tag}}' | sort -V | head -n -2 | xargs -r -I{} sudo docker image rm tomo-api:{} >/dev/null
 	sudo docker images tomo-sandbox --format '{{.Tag}}' | grep -v -e latest -e $SANDBOX | xargs -r -I{} sudo docker image rm tomo-sandbox:{} >/dev/null
-	sudo docker builder prune -f --filter until=72h >/dev/null
+	sudo docker builder prune -f --keep-storage 3gb >/dev/null
 	df -h / | tail -1
 } || echo '⚠ server cleanup failed (deploy is fine)'"
 
