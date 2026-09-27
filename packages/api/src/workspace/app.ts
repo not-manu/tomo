@@ -28,6 +28,7 @@ import { WindowAPI } from "./window/api";
 import windowApp from "./window/app";
 
 const Path = z.object({ path: z.string().default("/") });
+const Download = Path.extend({ download: z.literal("1").optional() });
 
 const one = new Hono<Middleware.IsMember>()
 	.use(MiddlewareAPI.isMember)
@@ -211,11 +212,13 @@ const one = new Hono<Middleware.IsMember>()
 		);
 		return c.json(entries);
 	})
-	.get("/files/content", zValidator("query", Path), (c) => {
+	.get("/files/content", zValidator("query", Download), (c) => {
 		const id = c.get("workspace").id;
-		const { path } = c.req.valid("query");
+		const { path, download } = c.req.valid("query");
 		const total = SandboxAPI.size(id, path);
+		const name = encodeURIComponent(path.split("/").pop() || "download");
 		const headers = {
+			...(download ? { "Content-Disposition": `attachment; filename*=UTF-8''${name}` } : {}),
 			"Content-Type": Sandbox.mime(path),
 			...(Sandbox.preview(path) === "pdf" ? {} : { "Content-Security-Policy": "sandbox" }),
 			"X-Content-Type-Options": "nosniff",

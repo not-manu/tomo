@@ -1,5 +1,5 @@
 import type { Sandbox } from "@tomo/api";
-import { ExternalLink, Trash2 } from "lucide-react";
+import { Download, ExternalLink, Trash2 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import {
 	AlertDialog,
@@ -18,7 +18,7 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "~/components/ui/context-menu";
-import { useDeleteFile } from "~/hooks/use-files";
+import { download, useDeleteFile } from "~/hooks/use-files";
 
 export function EntryMenu({
 	workspaceId,
@@ -44,6 +44,12 @@ export function EntryMenu({
 						<ExternalLink />
 						Open
 					</ContextMenuItem>
+					{folder ? null : (
+						<ContextMenuItem onSelect={() => download(workspaceId, entry.path)}>
+							<Download />
+							Download
+						</ContextMenuItem>
+					)}
 					<ContextMenuSeparator />
 					<ContextMenuItem onSelect={() => setConfirm(true)} variant="destructive">
 						<Trash2 />

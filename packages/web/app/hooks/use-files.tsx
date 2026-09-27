@@ -36,6 +36,15 @@ export function fileUrl(workspaceId: string, path: string, version?: Date) {
 	return url.toString();
 }
 
+export function download(workspaceId: string, path: string) {
+	const url = new URL(fileUrl(workspaceId, path));
+	url.searchParams.set("download", "1");
+	const link = document.createElement("a");
+	link.href = url.toString();
+	link.download = basename(path);
+	link.click();
+}
+
 export function useFileSync() {
 	const client = useQueryClient();
 	useSync(Sandbox.Events.changed, ({ workspaceId }) => {
