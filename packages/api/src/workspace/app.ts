@@ -8,11 +8,15 @@ import { SocketAPI } from "../api/socket/api";
 import { Core } from "../core";
 import { Sandbox } from "../sandbox";
 import { SandboxAPI } from "../sandbox/api";
+import { Sync } from "../sync";
 import { SyncAPI } from "../sync/api";
 import { Workspace } from ".";
 import { WorkspaceAPI } from "./api";
+import { DesktopAPI } from "./desktop/api";
+import desktopApp from "./desktop/app";
 import { Invite } from "./invite";
 import { InviteAPI } from "./invite/api";
+import { Presence } from "./presence";
 import { PresenceAPI } from "./presence/api";
 
 const Path = z.object({ path: z.string().default("/") });
@@ -25,6 +29,13 @@ const one = new Hono<Middleware.IsMember>()
 		if (error.message === "Path escapes workspace") return c.json({ message: error.message }, 400);
 		if (error.message === "Already a member") return c.json({ message: error.message }, 409);
 		if (error.message === "Storage limit reached") return c.json({ message: error.message }, 413);
+		if (error.message === "Desktop limit reached") return c.json({ message: error.message }, 409);
+		if (
+			error.message === "Cannot remove the last desktop" ||
+			error.message === "Order must include every desktop exactly once"
+		) {
+			return c.json({ message: error.message }, 400);
+		}
 		console.error(error);
 		return c.json({ message: "Internal error" }, 500);
 	})
@@ -50,7 +61,20 @@ const one = new Hono<Middleware.IsMember>()
 					});
 					SocketAPI.keepAlive(ws);
 				},
-				onMessage: (event) => PresenceAPI.receive(workspaceId, id, event.data),
+				onMessage: (event) => {
+					const message = Sync.parse(event.data);
+					if (!message) return;
+					const move = Sync.decode(Presence.Events.move, message);
+					if (move) return PresenceAPI.move(workspaceId, id, move.point);
+					const view = Sync.decode(Presence.Events.view, message);
+					const desktop =
+						view &&
+						DesktopAPI.get(DbAPI.instance(), {
+							workspace: { id: workspaceId },
+							desktop: { id: view.desktopId },
+						});
+					if (desktop) PresenceAPI.view(workspaceId, id, desktop.id);
+				},
 				onClose: () => PresenceAPI.leave(workspaceId, id),
 			};
 		}),
@@ -82,6 +106,7 @@ const one = new Hono<Middleware.IsMember>()
 		SyncAPI.push({ users: [user.id] }, Workspace.Events.removed, { workspaceId: workspace.id });
 		return c.json({ ok: true });
 	})
+	.route("/desktops", desktopApp)
 	.get("/usage", async (c) => c.json(await SandboxAPI.usage(c.get("workspace").id)))
 	.get("/members", (c) => c.json(WorkspaceAPI.members(DbAPI.instance(), c.get("workspace"))))
 	.get("/invites", (c) => c.json(InviteAPI.list(DbAPI.instance(), c.get("workspace"))))

@@ -3,6 +3,7 @@ import { Db } from "../api/db";
 import { User } from "../auth/user";
 import { SandboxAPI } from "../sandbox/api";
 import { Workspace } from ".";
+import { DesktopAPI } from "./desktop/api";
 import { Member } from "./member";
 
 export namespace WorkspaceAPI {
@@ -23,6 +24,7 @@ export namespace WorkspaceAPI {
 			tx.insert(Member.Table)
 				.values({ workspaceId: workspace.id, userId: args.owner.id, role: "owner" })
 				.run();
+			DesktopAPI.initial(tx, { workspace, user: args.owner });
 			SandboxAPI.create(workspace.id);
 			return workspace;
 		});
