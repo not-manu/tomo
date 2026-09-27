@@ -35,6 +35,7 @@ export function Item({ workspace }: { workspace: Item }) {
 						className="group flex flex-col gap-2 rounded-2xl focus-visible:outline-none"
 						to={path}
 					>
+						{/* TODO: replace the wallpaper mockup with a live screenshot of the workspace's desktop */}
 						<Wallpaper.Desktop
 							className="aspect-square rounded-2xl border shadow-sm transition group-hover:shadow-md group-focus-visible:ring-2 group-focus-visible:ring-ring"
 							workspace={workspace}
