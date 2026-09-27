@@ -20,6 +20,7 @@ type Session = {
 	driver: SocketAPI.Context | undefined;
 	pending: string;
 	timer: NodeJS.Timeout | undefined;
+	since: number;
 	typed: Map<string, number>;
 	closed: boolean;
 };
@@ -27,6 +28,12 @@ type Session = {
 export namespace TerminalAPI {
 	const starting = new Map<string, Promise<Session>>();
 	const live = new Map<string, Session>();
+
+	const Quiet = 4;
+	const MaxDelay = 32;
+	const MaxSyncDelay = 120;
+	const SyncStart = "\x1b[?2026h";
+	const SyncEnd = "\x1b[?2026l";
 
 	const pidFile = (windowId: string) => `/tmp/.tomo-${windowId}.pid`;
 
@@ -62,6 +69,7 @@ export namespace TerminalAPI {
 			driver: undefined,
 			pending: "",
 			timer: undefined,
+			since: 0,
 			typed: new Map(),
 			closed: false,
 		};
@@ -79,8 +87,13 @@ export namespace TerminalAPI {
 
 	function output(s: Session, text: string) {
 		s.term.write(text);
+		if (!s.pending) s.since = Date.now();
 		s.pending += text;
-		s.timer ??= setTimeout(() => flush(s), 16);
+		const age = Date.now() - s.since;
+		const syncing = s.pending.lastIndexOf(SyncStart) > s.pending.lastIndexOf(SyncEnd);
+		const delay = syncing ? MaxSyncDelay - age : Math.min(Quiet, MaxDelay - age);
+		clearTimeout(s.timer);
+		s.timer = setTimeout(() => flush(s), Math.max(0, delay));
 	}
 
 	function flush(s: Session) {

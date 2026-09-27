@@ -1,6 +1,10 @@
+import { Workspace as WorkspaceModel } from "@tomo/api";
+import { ArrowLeft } from "lucide-react";
 import { Navigate, useParams, useSearchParams } from "react-router";
 import { Desktop } from "~/components/desktop";
+import { Tomo } from "~/components/tomo";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 import { useDesktops } from "~/hooks/use-desktops";
 import { LiveProvider, useLiveConnection } from "~/hooks/use-live";
 import { useWorkspace } from "~/hooks/use-workspace";
@@ -23,17 +27,31 @@ export default function DesktopPage() {
 	return (
 		<LiveProvider value={live}>
 			<main className="flex h-svh flex-col gap-2 bg-background p-2 sm:p-3">
-				{desktops.length > 0 ? (
-					<Desktop.Tabs
-						active={active}
-						desktops={desktops}
-						onSelect={select}
-						viewers={viewers}
-						workspaceId={id}
-					/>
-				) : (
-					<Skeleton className="h-9 w-48 rounded-xl" />
-				)}
+				<div className="flex min-w-0 items-center gap-1.5">
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Tomo.Link
+								aria-label="Back to workspace"
+								className="flex size-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-muted hover:text-foreground"
+								to={WorkspaceModel.path({ id })}
+							>
+								<ArrowLeft className="size-4" />
+							</Tomo.Link>
+						</TooltipTrigger>
+						<TooltipContent>{workspace?.name ?? "Workspace"}</TooltipContent>
+					</Tooltip>
+					{desktops.length > 0 ? (
+						<Desktop.Tabs
+							active={active}
+							desktops={desktops}
+							onSelect={select}
+							viewers={viewers}
+							workspaceId={id}
+						/>
+					) : (
+						<Skeleton className="h-9 w-48 rounded-xl" />
+					)}
+				</div>
 				{workspace && active ? (
 					<Desktop.Surface
 						className="grow rounded-2xl border"

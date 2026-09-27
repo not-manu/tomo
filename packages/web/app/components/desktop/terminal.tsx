@@ -1,6 +1,7 @@
 import "@xterm/xterm/css/xterm.css";
 import { type Presence, Terminal as TerminalModel } from "@tomo/api";
 import { FitAddon } from "@xterm/addon-fit";
+import { WebglAddon } from "@xterm/addon-webgl";
 import { Terminal as XTerm } from "@xterm/xterm";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { User } from "~/components/user";
@@ -35,6 +36,8 @@ export function Terminal({ windowId }: { windowId: string }) {
 	const term = useRef<XTerm>(undefined);
 	const fit = useRef<FitAddon>(undefined);
 	const exited = useRef(false);
+	const queue = useRef("");
+	const frame = useRef<number>(undefined);
 	const [typing, setTyping] = useState<Presence.User | null>(null);
 	const typingTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -45,6 +48,13 @@ export function Terminal({ windowId }: { windowId: string }) {
 			cols: Math.min(500, Math.max(2, proposed.cols)),
 			rows: Math.min(200, Math.max(2, proposed.rows)),
 		};
+	}
+
+	function drain() {
+		if (frame.current) cancelAnimationFrame(frame.current);
+		frame.current = undefined;
+		if (queue.current) term.current?.write(queue.current);
+		queue.current = "";
 	}
 
 	function attach() {
@@ -66,10 +76,16 @@ export function Terminal({ windowId }: { windowId: string }) {
 		const addon = new FitAddon();
 		xterm.loadAddon(addon);
 		xterm.open(container.current);
+		try {
+			const webgl = new WebglAddon();
+			webgl.onContextLoss(() => webgl.dispose());
+			xterm.loadAddon(webgl);
+		} catch {}
 		term.current = xterm;
 		fit.current = addon;
 		xterm.focus();
 		return () => {
+			if (frame.current) cancelAnimationFrame(frame.current);
 			xterm.dispose();
 			term.current = undefined;
 			fit.current = undefined;
@@ -112,22 +128,28 @@ export function Terminal({ windowId }: { windowId: string }) {
 
 	useLiveEvent(TerminalModel.Events.snapshot, (event) => {
 		if (event.windowId !== windowId) return;
+		queue.current = "";
 		term.current?.reset();
 		term.current?.resize(event.size.cols, event.size.rows);
 		term.current?.write(event.data);
 	});
 
 	useLiveEvent(TerminalModel.Events.output, (event) => {
-		if (event.windowId === windowId) term.current?.write(event.data);
+		if (event.windowId !== windowId) return;
+		queue.current += event.data;
+		frame.current ??= requestAnimationFrame(drain);
 	});
 
 	useLiveEvent(TerminalModel.Events.size, (event) => {
-		if (event.windowId === windowId) term.current?.resize(event.size.cols, event.size.rows);
+		if (event.windowId !== windowId) return;
+		drain();
+		term.current?.resize(event.size.cols, event.size.rows);
 	});
 
 	useLiveEvent(TerminalModel.Events.exit, (event) => {
 		if (event.windowId !== windowId) return;
 		exited.current = true;
+		drain();
 		term.current?.write("\r\n\x1b[2m[process exited — press any key to restart]\x1b[0m\r\n");
 	});
 
