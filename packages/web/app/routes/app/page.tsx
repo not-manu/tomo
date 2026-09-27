@@ -13,7 +13,18 @@ export default function AppPage() {
 	const pending = inbox?.length ?? 0;
 
 	return (
-		<div className="flex flex-col gap-10">
+		<Tabs className="gap-10" defaultValue="workspaces">
+			<TabsList>
+				<TabsTrigger value="workspaces">Workspaces</TabsTrigger>
+				<TabsTrigger value="invites">
+					Invites
+					{pending > 0 ? (
+						<span className="rounded-full bg-primary px-1.5 text-primary-foreground text-xs tabular-nums">
+							{pending}
+						</span>
+					) : null}
+				</TabsTrigger>
+			</TabsList>
 			<div className="flex flex-wrap items-end justify-between gap-6">
 				<div>
 					<Text.Heading>Welcome{firstName && `, ${firstName}`}</Text.Heading>
@@ -21,25 +32,12 @@ export default function AppPage() {
 				</div>
 				<Workspace.Create.Root />
 			</div>
-			<Tabs defaultValue="workspaces">
-				<TabsList>
-					<TabsTrigger value="workspaces">Workspaces</TabsTrigger>
-					<TabsTrigger value="invites">
-						Invites
-						{pending > 0 ? (
-							<span className="rounded-full bg-primary px-1.5 text-primary-foreground text-xs tabular-nums">
-								{pending}
-							</span>
-						) : null}
-					</TabsTrigger>
-				</TabsList>
-				<TabsContent className="pt-6" value="workspaces">
-					<Workspace.List.Root />
-				</TabsContent>
-				<TabsContent className="pt-6" value="invites">
-					<Invite.Inbox.Root />
-				</TabsContent>
-			</Tabs>
-		</div>
+			<TabsContent value="workspaces">
+				<Workspace.List.Root />
+			</TabsContent>
+			<TabsContent value="invites">
+				<Invite.Inbox.Root />
+			</TabsContent>
+		</Tabs>
 	);
 }
