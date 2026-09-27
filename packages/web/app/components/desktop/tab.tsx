@@ -33,7 +33,7 @@ export function Tab({
 	return (
 		<div
 			className={cn(
-				"group relative flex h-9 min-w-36 max-w-56 shrink-0 items-center gap-2 rounded-xl border px-3 text-sm transition",
+				"group relative flex h-9 w-56 shrink-0 items-center gap-2 rounded-xl border px-3 text-sm transition",
 				active
 					? "border-border bg-secondary text-secondary-foreground shadow-sm"
 					: "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -65,7 +65,7 @@ export function Tab({
 			{removable && !editing ? (
 				<button
 					aria-label={`Close ${name}`}
-					className="relative -mr-1 hidden size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground group-hover:flex"
+					className="relative -mr-1 flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
 					onClick={onRemove}
 					type="button"
 				>
