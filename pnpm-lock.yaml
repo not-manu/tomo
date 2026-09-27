@@ -156,6 +156,9 @@ importers:
       lucide-react:
         specifier: ^1.48.0
         version: 1.48.0(react@19.3.0)
+      modern-screenshot:
+        specifier: ^4.7.0
+        version: 4.7.0
       motion:
         specifier: ^13.4.4
         version: 13.4.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -4017,6 +4020,9 @@ packages:
 
   mkdirp-classic@0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
+
+  modern-screenshot@4.7.0:
+    resolution: {integrity: sha512-9YxN+ddPSMMlhylOv25VHzXrl9u67QRxoh7+SEewGtgUw7t6hHTrjptSDJUSne9oG4Xk/h2cwG15nIt4Hc9ujg==}
 
   morgan@1.12.1:
     resolution: {integrity: sha512-tljKC0ex20AjO58Ob/eZ53JloycbVswbVNCHx6V6VLGzqt/w8dIynVGL0G8qVjNKwiA7sYSogCrN6QtJ82IV+g==}
@@ -8335,6 +8341,8 @@ snapshots:
   minimist@1.2.8: {}
 
   mkdirp-classic@0.5.3: {}
+
+  modern-screenshot@4.7.0: {}
 
   morgan@1.12.1:
     dependencies:

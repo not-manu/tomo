@@ -215,7 +215,9 @@ export function Surface({
 					]}
 				/>
 			</div>
-			<Workspace.Cursors.Root className="absolute inset-0 z-[1001]" cursors={cursors} />
+			<div className="contents" data-snapshot-ignore>
+				<Workspace.Cursors.Root className="absolute inset-0 z-[1001]" cursors={cursors} />
+			</div>
 		</section>
 	);
 }

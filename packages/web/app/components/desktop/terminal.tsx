@@ -101,7 +101,7 @@ export function Terminal({ windowId }: { windowId: string }) {
 		});
 		xterm.open(container.current);
 		try {
-			const webgl = new WebglAddon();
+			const webgl = new WebglAddon(true);
 			webgl.onContextLoss(() => webgl.dispose());
 			xterm.loadAddon(webgl);
 		} catch {}

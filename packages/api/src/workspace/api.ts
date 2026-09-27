@@ -5,6 +5,7 @@ import { SandboxAPI } from "../sandbox/api";
 import { Workspace } from ".";
 import { DesktopAPI } from "./desktop/api";
 import { Member } from "./member";
+import { SnapshotAPI } from "./snapshot/api";
 
 export namespace WorkspaceAPI {
 	type Ref = Pick<Workspace.Select, "id">;
@@ -99,5 +100,6 @@ export namespace WorkspaceAPI {
 	export async function remove(db: Db.Client, workspace: Ref) {
 		db.delete(Workspace.Table).where(eq(Workspace.Table.id, workspace.id)).run();
 		await SandboxAPI.remove(workspace.id);
+		SnapshotAPI.remove(workspace.id);
 	}
 }

@@ -20,6 +20,7 @@ import { Invite } from "./invite";
 import { InviteAPI } from "./invite/api";
 import { Presence } from "./presence";
 import { PresenceAPI } from "./presence/api";
+import { SnapshotAPI } from "./snapshot/api";
 import { Terminal } from "./terminal";
 import { TerminalAPI } from "./terminal/api";
 import { DesktopWindow } from "./window";
@@ -54,7 +55,27 @@ const one = new Hono<Middleware.IsMember>()
 			...workspace,
 			role: c.get("member").role,
 			online: PresenceAPI.online(workspace.id),
+			snapshotAt: SnapshotAPI.at(workspace.id),
 		});
+	})
+	.get("/snapshot", (c) => {
+		const id = c.get("workspace").id;
+		if (SnapshotAPI.at(id) === null) return c.json({ message: "Not found" }, 404);
+		return c.body(SnapshotAPI.stream(id), 200, {
+			"Content-Type": "image/webp",
+			"Cache-Control": "private, max-age=31536000, immutable",
+		});
+	})
+	.put("/snapshot", async (c) => {
+		const workspace = c.get("workspace");
+		const body = c.req.raw.body;
+		if (!body) return c.json({ message: "Missing snapshot" }, 400);
+		if (Number(c.req.header("Content-Length") ?? 0) > SnapshotAPI.MaxBytes) {
+			return c.json({ message: "Snapshot too large" }, 413);
+		}
+		await SnapshotAPI.save(workspace.id, body);
+		SyncAPI.push({ workspace }, Workspace.Events.updated, { workspaceId: workspace.id });
+		return c.json({ ok: true });
 	})
 	.get(
 		"/presence",
@@ -261,6 +282,7 @@ const app = new Hono<Middleware.IsAuthenticated>()
 			WorkspaceAPI.list(DbAPI.instance(), { user: c.get("identity").user }).map((workspace) => ({
 				...workspace,
 				online: PresenceAPI.online(workspace.id),
+				snapshotAt: SnapshotAPI.at(workspace.id),
 			})),
 		),
 	)

@@ -79,11 +79,13 @@ export namespace SandboxAPI {
 	export function watch(id: string, path: string, onChange: () => void) {
 		const key = `${id}:${path}`;
 		if (watchers.has(key)) return;
-		let timer: ReturnType<typeof setTimeout> | undefined;
+		let queued = false;
 		try {
 			const watcher = watchFs(host(id, path), () => {
-				timer ??= setTimeout(() => {
-					timer = undefined;
+				if (queued) return;
+				queued = true;
+				setTimeout(() => {
+					queued = false;
 					onChange();
 				}, 200);
 			});

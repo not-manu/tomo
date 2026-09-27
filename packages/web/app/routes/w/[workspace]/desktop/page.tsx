@@ -1,6 +1,6 @@
 import { Workspace as WorkspaceModel } from "@tomo/api";
 import { ArrowLeft } from "lucide-react";
-import { Navigate, useParams, useSearchParams } from "react-router";
+import { Navigate, useNavigate, useParams, useSearchParams } from "react-router";
 import { Desktop } from "~/components/desktop";
 import { Theme } from "~/components/theme";
 import { Tomo } from "~/components/tomo";
@@ -8,6 +8,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 import { useDesktops } from "~/hooks/use-desktops";
 import { LiveProvider, useLiveConnection } from "~/hooks/use-live";
+import { useSnapshot } from "~/hooks/use-snapshot";
 import { useWorkspace } from "~/hooks/use-workspace";
 
 export default function DesktopPage() {
@@ -18,6 +19,8 @@ export default function DesktopPage() {
 	const selected = params.get("d");
 	const active = desktops.find((desktop) => desktop.id === selected)?.id ?? desktops[0]?.id;
 	const { cursors, viewers, move, live } = useLiveConnection(id, active);
+	const capture = useSnapshot(id);
+	const navigate = useNavigate();
 
 	if (!isPending && !workspace) return <Navigate replace to="/app" />;
 
@@ -34,6 +37,14 @@ export default function DesktopPage() {
 							<Tomo.Link
 								aria-label="Back to workspace"
 								className="flex size-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-muted hover:text-foreground"
+								onClick={(event) => {
+									if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+									event.preventDefault();
+									const leave = () => navigate(WorkspaceModel.path({ id }));
+									void Promise.race([capture(), new Promise((done) => setTimeout(done, 800))]).then(
+										leave,
+									);
+								}}
 								to={WorkspaceModel.path({ id })}
 							>
 								<ArrowLeft className="size-4" />
