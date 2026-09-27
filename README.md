@@ -11,6 +11,11 @@ a collaborative workspace for humans and agents.
 
 <br/>
 
+<a href="https://tomo.computer"><img src="./docs/readme/site.jpg" width="100%" alt="the tomo.computer homepage: a shared desktop with a dock, above tabs for one shared desktop, agents, live previews and co-editing"/></a>
+
+<br/>
+<br/>
+
 <img src="./docs/readme/idea.svg" width="100%" alt="today everyone works on their own machine; with tomo the team and its agents share one computer"/>
 
 <br/>
