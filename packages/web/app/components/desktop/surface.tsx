@@ -50,7 +50,9 @@ export function Surface({
 	const frame = useRef<number>(undefined);
 	const outgoing = useRef<{ windowId: string; frame: Frame } | null>(null);
 
-	const windows = all.filter((window) => window.desktopId === desktopId);
+	const windows = all
+		.filter((window) => window.desktopId === desktopId)
+		.sort((a, b) => a.id.localeCompare(b.id));
 	const top = Math.max(0, ...windows.map((window) => window.z));
 
 	useLiveEvent(DesktopWindow.Events.dragged, ({ windowId, frame, user }) => {
