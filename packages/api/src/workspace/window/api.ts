@@ -76,6 +76,26 @@ export namespace WindowAPI {
 		});
 	}
 
+	export function welcome(
+		db: Db.Client,
+		args: { workspace: WorkspaceRef; desktop: DesktopRef; user: UserRef; path: string },
+	) {
+		db.insert(Table)
+			.values({
+				workspaceId: args.workspace.id,
+				desktopId: args.desktop.id,
+				app: "preview",
+				path: args.path,
+				x: 0.275,
+				y: 0.04,
+				w: 0.45,
+				h: 0.86,
+				z: 1,
+				createdBy: args.user.id,
+			})
+			.run();
+	}
+
 	export function update(
 		db: Db.Type,
 		args: { window: DesktopWindow.Select; input: DesktopWindow.Update },

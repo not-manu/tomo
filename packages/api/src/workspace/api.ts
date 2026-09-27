@@ -6,6 +6,7 @@ import { Workspace } from ".";
 import { DesktopAPI } from "./desktop/api";
 import { Member } from "./member";
 import { SnapshotAPI } from "./snapshot/api";
+import { WindowAPI } from "./window/api";
 
 export namespace WorkspaceAPI {
 	type Ref = Pick<Workspace.Select, "id">;
@@ -25,8 +26,9 @@ export namespace WorkspaceAPI {
 			tx.insert(Member.Table)
 				.values({ workspaceId: workspace.id, userId: args.owner.id, role: "owner" })
 				.run();
-			DesktopAPI.initial(tx, { workspace, user: args.owner });
+			const desktop = DesktopAPI.initial(tx, { workspace, user: args.owner });
 			SandboxAPI.create(workspace.id);
+			WindowAPI.welcome(tx, { workspace, desktop, user: args.owner, path: SandboxAPI.Welcome });
 			return workspace;
 		});
 	}

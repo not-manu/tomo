@@ -1,15 +1,19 @@
 import { Workspace as WorkspaceModel } from "@tomo/api";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, UserPlus } from "lucide-react";
+import { useState } from "react";
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router";
 import { Desktop } from "~/components/desktop";
 import { Theme } from "~/components/theme";
 import { Tomo } from "~/components/tomo";
+import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
+import { Workspace } from "~/components/workspace";
 import { useDesktops } from "~/hooks/use-desktops";
 import { LiveProvider, useLiveConnection } from "~/hooks/use-live";
 import { useSnapshot } from "~/hooks/use-snapshot";
 import { useWorkspace } from "~/hooks/use-workspace";
+import { useSession } from "~/lib/auth";
 
 export default function DesktopPage() {
 	const { workspace: id = "" } = useParams();
@@ -21,6 +25,15 @@ export default function DesktopPage() {
 	const { cursors, viewers, move, live } = useLiveConnection(id, active);
 	const capture = useSnapshot(id);
 	const navigate = useNavigate();
+	const { data: session } = useSession();
+	const [inviting, setInviting] = useState(false);
+	const others = new Set(
+		Object.values(viewers)
+			.flat()
+			.map((user) => user.id)
+			.filter((user) => user !== session?.user.id),
+	);
+	const alone = Boolean(session && workspace) && others.size === 0;
 
 	if (!isPending && !workspace) return <Navigate replace to="/app" />;
 
@@ -64,6 +77,14 @@ export default function DesktopPage() {
 						<Skeleton className="h-9 w-48 rounded-xl" />
 					)}
 					<div className="grow" />
+					{workspace ? (
+						<Workspace.Members.Root onOpenChange={setInviting} open={inviting} workspace={workspace}>
+							<Button className="rounded-xl" size="sm" variant="ghost">
+								<UserPlus data-icon="inline-start" />
+								Invite
+							</Button>
+						</Workspace.Members.Root>
+					) : null}
 					<Theme.Switch />
 				</div>
 				{workspace && active ? (
@@ -78,6 +99,15 @@ export default function DesktopPage() {
 				) : (
 					<Skeleton className="grow rounded-2xl" />
 				)}
+				{session ? (
+					<div className="fixed right-6 bottom-6 z-50 w-80">
+						<Workspace.Members.Nudge
+							alone={alone}
+							onInvite={() => setInviting(true)}
+							user={session.user}
+						/>
+					</div>
+				) : null}
 			</main>
 		</LiveProvider>
 	);

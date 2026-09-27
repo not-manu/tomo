@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Welcome to tomo</title>
+<style>
+@page { size: 8.5in 11in; margin: 0; }
+:root {
+	--paper: #FFFCF0; --ink: #100F0F; --muted: #6F6E69; --line: #E6E4D9; --card: #F2F0E5;
+	--blue: #205EA6; --orange: #BC5215; --green: #66800B; --purple: #5E409D; --magenta: #A02F6F; --cyan: #24837B;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { background: var(--paper); color: var(--ink); font-family: "Geist", system-ui, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.page { width: 8.5in; height: 11in; padding: 0.7in 0.75in 0.6in; display: flex; flex-direction: column; }
+header { display: flex; align-items: center; gap: 14px; }
+header img { width: 44px; height: 44px; }
+.brand { font-weight: 600; font-size: 18px; letter-spacing: -0.01em; }
+h1 { font-size: 44px; line-height: 1.05; letter-spacing: -0.03em; font-weight: 600; margin-top: 36px; }
+.lede { font-size: 17px; color: var(--muted); margin-top: 12px; line-height: 1.45; max-width: 5.6in; }
+.friends { margin-top: 26px; border: 1px solid var(--ink); border-radius: 14px; padding: 16px 18px; display: flex; gap: 14px; align-items: flex-start; }
+.friends b { display: block; font-size: 15px; margin-bottom: 3px; }
+.friends p { font-size: 13px; line-height: 1.5; color: var(--ink); }
+.dot { flex: none; width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; color: var(--paper); font-weight: 600; font-size: 13px; }
+.pair { display: flex; flex: none; }
+.pair .dot + .dot { margin-left: -10px; border: 2px solid var(--paper); }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; margin-top: 30px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.card { background: var(--card); border-radius: 12px; padding: 14px 16px; }
+.card .n { font-family: "Berkeley Mono", ui-monospace, monospace; font-size: 11px; font-weight: 600; }
+.card b { display: block; font-size: 14.5px; margin: 5px 0 4px; }
+.card p { font-size: 12px; line-height: 1.5; color: #403E3C; }
+code { font-family: "Berkeley Mono", ui-monospace, monospace; font-size: 11px; background: var(--paper); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; }
+.grow { flex: 1; }
+footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; }
+</style>
+</head>
+<body>
+<div class="page">
+	<header>
+		<img alt="" src="../brand/logo-light.svg">
+		<span class="brand">tomo</span>
+	</header>
+
+	<h1>Welcome to your<br>shared computer.</h1>
+	<p class="lede">This desktop is one real machine that your whole team — and its AI agents — use at the same time. Everything you open, type and run here, everyone else sees live. It's still here after you all log off.</p>
+
+	<div class="friends">
+		<div class="pair">
+			<span class="dot" style="background: var(--blue)">M</span>
+			<span class="dot" style="background: var(--orange)">C</span>
+		</div>
+		<div>
+			<b>tomo is better with friends.</b>
+			<p>Alone, it's a nice cloud computer. With a teammate, it's one screen with two mice. Click <strong>Invite</strong> at the top of the desktop (or <strong>Members</strong> in the lobby), add an email, and watch their cursor show up.</p>
+		</div>
+	</div>
+
+	<h2>Things to try</h2>
+	<div class="grid">
+		<div class="card">
+			<span class="n" style="color: var(--blue)">01</span>
+			<b>Open the Terminal</b>
+			<p>It's in the dock. A real Linux shell with Python, Node and git — and everyone in the room sees the same one.</p>
+		</div>
+		<div class="card">
+			<span class="n" style="color: var(--purple)">02</span>
+			<b>Put an agent to work</b>
+			<p>Type <code>codex</code> in the terminal and ask for something. It edits the same files you're looking at, in front of everyone.</p>
+		</div>
+		<div class="card">
+			<span class="n" style="color: var(--green)">03</span>
+			<b>Drop in files</b>
+			<p>Drag anything from your computer into Finder. It's instantly on everyone's screen. Right-click to download or delete.</p>
+		</div>
+		<div class="card">
+			<span class="n" style="color: var(--orange)">04</span>
+			<b>Edit together</b>
+			<p>Double-click a text or code file. Two people can type in it at once, like a shared doc.</p>
+		</div>
+		<div class="card">
+			<span class="n" style="color: var(--magenta)">05</span>
+			<b>Run a web app</b>
+			<p>Start a dev server, e.g. <code>npx create-vite app</code>, then open the Browser app on <code>5173</code>. Share the link with anyone.</p>
+		</div>
+		<div class="card">
+			<span class="n" style="color: var(--cyan)">06</span>
+			<b>Make more room</b>
+			<p>Add desktops with the tabs up top. Leave whenever — windows, files and running programs stay put.</p>
+		</div>
+	</div>
+
+	<div class="grow"></div>
+	<footer>
+		<span>tomo.computer — one computer for your team and its agents.</span>
+		<span>You can delete this file. It's just a hello.</span>
+	</footer>
+</div>
+</body>
+</html>

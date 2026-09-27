@@ -20,6 +20,7 @@ WORKDIR /app/packages/api
 COPY --from=deps /app/node_modules /app/node_modules
 COPY --from=deps /app/packages/api/node_modules ./node_modules
 COPY --from=build /app/packages/api/dist ./dist
+COPY --from=build /app/packages/api/assets ./assets
 COPY --from=build /app/packages/api/src/api/db/migrations ./src/api/db/migrations
 COPY --from=build /app/packages/web/build/client ../web/build/client
 USER node

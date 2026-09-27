@@ -1,7 +1,9 @@
 import { execFile } from "node:child_process";
 import {
+	copyFileSync,
 	createReadStream,
 	createWriteStream,
+	existsSync,
 	type FSWatcher,
 	mkdirSync,
 	readdirSync,
@@ -47,8 +49,12 @@ export namespace SandboxAPI {
 		return target;
 	}
 
+	export const Welcome = "/Desktop/Welcome to tomo.pdf";
+	const WelcomeSource = resolve("assets/welcome-to-tomo.pdf");
+
 	export function create(id: string) {
-		mkdirSync(dir(id), { recursive: true });
+		mkdirSync(dirname(host(id, Welcome)), { recursive: true });
+		if (existsSync(WelcomeSource)) copyFileSync(WelcomeSource, host(id, Welcome));
 		void container(id).catch((error) => console.error(`sandbox ${id} warm-up failed`, error));
 	}
 

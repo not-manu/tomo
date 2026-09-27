@@ -1,4 +1,5 @@
 import { Users } from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
 	Dialog,
@@ -17,20 +18,33 @@ import { Item } from "./item";
 import { Pending } from "./pending";
 import { People } from "./people";
 
-export function Root({ workspace }: { workspace: Detail }) {
+export function Root({
+	workspace,
+	open,
+	onOpenChange,
+	children,
+}: {
+	workspace: Detail;
+	open?: boolean | undefined;
+	onOpenChange?: ((open: boolean) => void) | undefined;
+	children?: ReactNode;
+}) {
 	const members = useMembers(workspace.id);
 	const invites = useWorkspaceInvites(workspace.id);
+	const [local, setLocal] = useState(false);
 
 	return (
-		<Dialog>
+		<Dialog onOpenChange={onOpenChange ?? setLocal} open={open ?? local}>
 			<DialogTrigger asChild>
-				<Button variant="outline">
-					<Users data-icon="inline-start" />
-					Members
-					{members.data ? (
-						<span className="text-muted-foreground tabular-nums">{members.data.length}</span>
-					) : null}
-				</Button>
+				{children ?? (
+					<Button variant="outline">
+						<Users data-icon="inline-start" />
+						Members
+						{members.data ? (
+							<span className="text-muted-foreground tabular-nums">{members.data.length}</span>
+						) : null}
+					</Button>
+				)}
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
