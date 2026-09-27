@@ -1,5 +1,6 @@
 import { Core } from "@tomo/api";
 import { Auth } from "~/components/auth";
+import { Demo } from "~/components/demo";
 import { Footer } from "~/components/footer";
 import { Text } from "~/components/text";
 import { Tomo } from "~/components/tomo";
@@ -27,8 +28,7 @@ export default function HomePage() {
 				<Auth.Button />
 			</div>
 			<div className="h-16" />
-			{/* TODO: demo animation of the shared desktop */}
-			<div className="aspect-video w-full rounded-2xl border bg-muted" />
+			<Demo.Root />
 			<div className="grow" />
 			<Footer.Site />
 		</main>
