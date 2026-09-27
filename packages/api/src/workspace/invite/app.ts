@@ -10,6 +10,9 @@ import { InviteAPI } from "./api";
 const app = new Hono<Middleware.IsAuthenticated>()
 	.use(MiddlewareAPI.isAuthenticated)
 	.get("/", (c) => c.json(InviteAPI.inbox(DbAPI.instance(), { user: c.get("identity").user })))
+	.get("/people", (c) =>
+		c.json(InviteAPI.people(DbAPI.instance(), { user: c.get("identity").user })),
+	)
 	.post("/:id/accept", (c) => {
 		const user = c.get("identity").user;
 		const workspace = InviteAPI.accept(DbAPI.instance(), {

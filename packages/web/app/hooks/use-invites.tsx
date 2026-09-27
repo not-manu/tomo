@@ -62,6 +62,17 @@ export function useWorkspaceInvites(id: string) {
 	});
 }
 
+export function usePeople() {
+	return useQuery({
+		queryKey: Invite.QueryKeys.people(),
+		queryFn: async () => {
+			const response = await hono.api.invites.people.$get();
+			if (!response.ok) throw new Error(await errorMessage(response));
+			return response.json();
+		},
+	});
+}
+
 export function useCreateInvite(id: string) {
 	const client = useQueryClient();
 	return useMutation({
@@ -73,7 +84,10 @@ export function useCreateInvite(id: string) {
 			if (!response.ok) throw new Error(await errorMessage(response));
 			return response.json();
 		},
-		onSuccess: () => client.invalidateQueries({ queryKey: Invite.QueryKeys.workspace(id) }),
+		onSuccess: () => {
+			client.invalidateQueries({ queryKey: Invite.QueryKeys.workspace(id) });
+			client.invalidateQueries({ queryKey: Invite.QueryKeys.people() });
+		},
 	});
 }
 

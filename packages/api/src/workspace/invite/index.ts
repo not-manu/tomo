@@ -23,12 +23,20 @@ export namespace Invite {
 	});
 	export type Create = z.infer<typeof Create>;
 
+	export type Person = {
+		email: string;
+		userId: string | null;
+		name: string | null;
+		image: string | null;
+	};
+
 	export function normalizeEmail(email: string) {
 		return email.trim().toLowerCase();
 	}
 
 	export const QueryKeys = {
 		inbox: () => ["invites"] as const,
+		people: () => ["invites", "people"] as const,
 		workspace: (id: string) => ["workspace", id, "invites"] as const,
 	};
 

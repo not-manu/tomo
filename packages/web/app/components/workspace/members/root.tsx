@@ -15,6 +15,7 @@ import type { Detail } from "../header/root";
 import { InviteForm } from "./invite-form";
 import { Item } from "./item";
 import { Pending } from "./pending";
+import { People } from "./people";
 
 export function Root({ workspace }: { workspace: Detail }) {
 	const members = useMembers(workspace.id);
@@ -39,6 +40,7 @@ export function Root({ workspace }: { workspace: Detail }) {
 					</DialogDescription>
 				</DialogHeader>
 				<InviteForm workspace={workspace} />
+				<People workspace={workspace} />
 				<ul className="flex flex-col divide-y">
 					{members.isPending
 						? ["a", "b"].map((key) => (

@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, max, ne, sql } from "drizzle-orm";
 import { Db } from "../../api/db";
 import { User } from "../../auth/user";
 import { Workspace } from "..";
@@ -35,6 +35,58 @@ export namespace InviteAPI {
 			})
 			.returning()
 			.get();
+	}
+
+	export function people(db: Db.Client, args: { user: UserRef }): Invite.Person[] {
+		const mine = db
+			.select({ id: Member.Table.workspaceId })
+			.from(Member.Table)
+			.where(eq(Member.Table.userId, args.user.id));
+		const teammates = db
+			.select({
+				userId: User.Table.id,
+				email: User.Table.email,
+				name: User.Table.name,
+				image: User.Table.image,
+				at: max(Member.Table.joinedAt),
+			})
+			.from(Member.Table)
+			.innerJoin(User.Table, eq(Member.Table.userId, User.Table.id))
+			.where(and(inArray(Member.Table.workspaceId, mine), ne(Member.Table.userId, args.user.id)))
+			.groupBy(User.Table.id)
+			.all();
+		const invited = db
+			.select({
+				email: Invite.Table.email,
+				userId: User.Table.id,
+				name: User.Table.name,
+				image: User.Table.image,
+				at: max(Invite.Table.updatedAt),
+			})
+			.from(Invite.Table)
+			.leftJoin(User.Table, eq(sql`lower(${User.Table.email})`, Invite.Table.email))
+			.where(eq(Invite.Table.invitedBy, args.user.id))
+			.groupBy(Invite.Table.email)
+			.all();
+		const self = Invite.normalizeEmail(args.user.email);
+		const people = new Map<string, Invite.Person & { at: number }>();
+		for (const person of [...teammates, ...invited]) {
+			const email = Invite.normalizeEmail(person.email);
+			const at = person.at ? new Date(person.at).getTime() : 0;
+			const known = people.get(email);
+			if (email === self || (known && known.at >= at)) continue;
+			people.set(email, {
+				email,
+				userId: person.userId ?? known?.userId ?? null,
+				name: person.name ?? known?.name ?? null,
+				image: person.image ?? known?.image ?? null,
+				at,
+			});
+		}
+		return [...people.values()]
+			.sort((a, b) => b.at - a.at)
+			.slice(0, 24)
+			.map(({ at: _, ...person }) => person);
 	}
 
 	export function get(db: Db.Client, invite: Ref) {
