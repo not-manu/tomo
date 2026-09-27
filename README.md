@@ -11,7 +11,7 @@ a collaborative workspace for humans and agents.
 
 <br/>
 
-<a href="https://tomo.computer"><img src="./docs/readme/site.jpg" width="100%" alt="the tomo.computer homepage: a shared desktop with a dock, above tabs for one shared desktop, agents, live previews and co-editing"/></a>
+<a href="https://tomo.computer"><img src="./docs/readme/site.gif" width="100%" alt="the tomo.computer homepage demo: a shared desktop where people and Codex open a terminal, a live preview and an editor together, above tabs for one shared desktop, agents, live previews and co-editing"/></a>
 
 <br/>
 <br/>
