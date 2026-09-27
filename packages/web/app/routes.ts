@@ -11,5 +11,6 @@ export default [
 		route("app", "routes/app/page.tsx"),
 		route("w/:workspace", "routes/w/[workspace]/page.tsx"),
 		route("w/:workspace/settings", "routes/w/[workspace]/settings/page.tsx"),
+		route("w/:workspace/desktop", "routes/w/[workspace]/desktop/page.tsx"),
 	]),
 ] satisfies RouteConfig;

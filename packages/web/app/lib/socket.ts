@@ -1,6 +1,7 @@
 export function socket(args: {
 	open: () => WebSocket;
 	onMessage: (data: unknown) => void;
+	onOpen?: () => void;
 	onReconnect?: () => void;
 	onClose?: () => void;
 }) {
@@ -14,6 +15,7 @@ export function socket(args: {
 		ws = args.open();
 		ws.onopen = () => {
 			attempt = 0;
+			args.onOpen?.();
 			if (opened) args.onReconnect?.();
 			opened = true;
 		};

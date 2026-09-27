@@ -14,7 +14,6 @@ export default function WorkspacePage() {
 		<div className="flex flex-col gap-10">
 			<Workspace.Header.Root workspace={workspace} />
 			<Workspace.Usage.Root workspace={workspace} />
-			{/* TODO: add the full-screen desktop route at Workspace.desktopPath that joins presence and shows cursors */}
 			<Workspace.Lobby.Root className="aspect-video rounded-2xl border" workspace={workspace} />
 		</div>
 	);
