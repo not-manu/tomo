@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="270" viewBox="0 0 800 270" role="img" aria-label="today everyone works on their own machine; with tomo, the team and its agents share one computer">
+<style>
+:root{--ink:#100F0F;--mute:#6F6E69;--line:#B7B5AC;--face:#FFFCF0;--acc:#205EA6;--agt:#BC5215}
+@media (prefers-color-scheme:dark){:root{--ink:#CECDC3;--mute:#878580;--line:#575653;--face:#1C1B1A;--acc:#4385BE;--agt:#DA702C}}
+text{font-family:Geist,ui-sans-serif,system-ui,-apple-system,sans-serif;fill:var(--ink)}
+.h{font-size:15px;font-weight:600}
+.s{font-size:12.5px;fill:var(--mute)}
+.l{font-size:13px;text-anchor:middle}
+.m{font-family:"Berkeley Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+.st{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.scr{fill:var(--face)}
+.acc{stroke:var(--acc)}.agt{stroke:var(--agt)}
+.fa{fill:var(--acc)}.fg{fill:var(--agt)}.fi{fill:var(--ink)}
+.dash{stroke-dasharray:4 5}
+.div{stroke:var(--line);stroke-width:1}
+</style>
+<defs>
+<g id="mon"><rect class="st scr" x="0" y="0" width="80" height="56" rx="4"/><path class="st" d="M40 56v12M26 68h28"/></g>
+<g id="person"><circle class="st" cx="0" cy="-6" r="5"/><path class="st" d="M-9 11a9 9 0 0 1 18 0"/></g>
+<path id="spark" d="M0-10C1-2 2-1 10 0C2 1 1 2 0 10C-1 2-2 1-10 0C-2-1-1-2 0-10Z"/>
+<path id="cur" d="M0 0l0 14l4-4l3 6l2-1l-3-6l5 0z"/>
+</defs>
+
+<text class="h" x="40" y="42">today</text>
+<text class="s" x="40" y="62">everyone on their own machine</text>
+<use href="#mon" x="40" y="96"/><use href="#person" x="80" y="124"/>
+<use href="#mon" x="160" y="96"/><use href="#person" x="200" y="124"/>
+<use href="#mon" x="280" y="96"/><use href="#spark" class="fg" x="320" y="124"/>
+<text class="l" x="80" y="190">you</text>
+<text class="l" x="200" y="190">teammate</text>
+<text class="l" x="320" y="190" style="fill:var(--agt)">agent</text>
+<path class="st dash div" d="M126 124h28M246 124h28"/>
+<text class="s m" x="200" y="232" text-anchor="middle">zip · slack · "send me that" · screen share</text>
+
+<path class="div" d="M400 30v210"/>
+
+<text class="h" x="440" y="42">tomo</text>
+<text class="s" x="440" y="62">one computer, shared, still there tomorrow</text>
+<rect class="st scr" x="555" y="92" width="130" height="90" rx="5"/>
+<path class="st" d="M620 182v14M600 196h40"/>
+<rect class="st" x="568" y="104" width="60" height="40" rx="2" style="stroke:var(--line)"/>
+<rect class="st" x="614" y="126" width="58" height="42" rx="2" style="stroke:var(--line)"/>
+<use href="#cur" class="fi" x="585" y="116"/>
+<use href="#cur" class="fa" x="640" y="104"/>
+<use href="#cur" class="fg" x="628" y="146"/>
+<use href="#person" x="470" y="104"/>
+<use href="#person" x="470" y="164"/>
+<use href="#spark" class="fg" x="766" y="137"/>
+<path class="st" d="M488 106h60"/>
+<path class="st acc" d="M488 166h60"/>
+<path class="st agt dash" d="M748 137h-56"/>
+<text class="l" x="470" y="136">you</text>
+<text class="l" x="470" y="196" style="fill:var(--acc)">teammate</text>
+<text class="l" x="766" y="166" style="fill:var(--agt)">agent</text>
+<text class="s m" x="620" y="232" text-anchor="middle">same files · same terminal · live</text>
+</svg>
