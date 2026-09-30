@@ -7,7 +7,7 @@
 
 a collaborative workspace for humans and agents.
 <br/>
-[tomo.computer](https://tomo.computer) · [Presentation & Design](https://www.figma.com/design/aLwUo7SOc5OYmaaUI3nw46/Innovation-Cup---tomo--Aura-67-?node-id=39-994&t=xraS8thq51sh1yhW-1)
+[tomo.computer](https://tomo.computer) · [Presentation & Design](https://www.figma.com/design/aLwUo7SOc5OYmaaUI3nw46/Innovation-Cup---tomo--Aura-67-?node-id=39-994&t=xraS8thq51sh1yhW-1) · [Sketch](https://excalidraw.com/#room=73c42a65afd328de4651,TF4TH17mT67Uq3mxceINdA)
 
 <br/>
 
