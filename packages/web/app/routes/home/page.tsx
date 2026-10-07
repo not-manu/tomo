@@ -45,6 +45,11 @@ export default function HomePage() {
 					</a>
 				</Button>
 			</div>
+			<Text.Subtext className="max-w-md">
+				{Core.NAME} is taking a nap. Every workspace runs its own sandbox, and keeping those servers
+				warm got expensive, so sign-ups are paused for now. The demo below still works, and
+				the code is open on GitHub.
+			</Text.Subtext>
 			<div className="h-16" />
 			<Demo.Root />
 			<div className="grow" />

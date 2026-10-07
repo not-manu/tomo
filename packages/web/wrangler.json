@@ -1,0 +1,9 @@
+{
+	"name": "tomo",
+	"compatibility_date": "2026-10-01",
+	"assets": {
+		"directory": "./build/client",
+		"not_found_handling": "single-page-application"
+	},
+	"routes": [{ "pattern": "tomo.computer", "custom_domain": true }]
+}
